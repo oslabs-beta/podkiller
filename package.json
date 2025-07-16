@@ -1,0 +1,24 @@
+{
+  "name": "podkiller",
+  "version": "1.0.0",
+  "description": "We kill pods in K8.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oslabs-beta/podkiller.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/oslabs-beta/podkiller/issues"
+  },
+  "homepage": "https://github.com/oslabs-beta/podkiller#readme",
+  "dependencies": {
+    "@kubernetes/client-node": "^1.3.0"
+  }
+}
