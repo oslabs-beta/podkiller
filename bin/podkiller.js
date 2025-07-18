@@ -1,4 +1,4 @@
-// Main CLI Entry Point
+#!/usr/bin/env node
 
 import { program } from 'commander';
 import chalk from 'chalk';
@@ -16,15 +16,19 @@ import { runPodKiller } from '../src/index.js';
 
 program
   .name('podkiller')
-  .description('Chaos Monkey Lite - Simple pod killing for dev/staging')
+  .description('We kill k8 pods.')
   .version(pkg.version);
 
 program
   .command('kill')
   .description('Kill pods and measure recovery time')
-  .action(() => {
+  .option('-n, --namespace <namespace>', 'Kubernetes namespace', 'default')
+  .option('--dry-run', 'Show what would be killed without actually doing it')
+  .option('-o, --output-format <format>', 'Output format (human|json|markdown)', 'human')
+  .option('-v, --verbose', 'Verbose output')
+  .action(async (options) => {
     console.log(chalk.yellow('🚀 PodKiller starting...'));
-    runPodKiller();
+    await runPodKiller(options);
   });
 
 program.parse();
