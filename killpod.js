@@ -35,12 +35,16 @@ async function killPod() {
 
   try {
     //get a list of the pods in the namespace //TRIPS UP HERE - returns NULL?
-    const res = await k8sApi.listNamespacedPod('default');
+    const res = await k8sApi.listNamespacedPod({ namespace });
+
+    console.log('namespace title', namespace);
 
     if (!namespace) return 'Namespace is required';
 
     // assign it to var
-    const pods = res.body.items;
+    const pods = res.items;
+
+    console.log('this is the items array', res.items);
 
     if (pods.length === 0) {
       console.log('No pods matched or found.');
@@ -54,7 +58,7 @@ async function killPod() {
 
     console.log(`Killing pod: ${podName}`);
 
-    await k8sApi.deleteNamespacedPod(podName, namespace);
+    await k8sApi.deleteNamespacedPod({ name: podName, namespace: namespace });
 
     console.log({
       killedPod: podName,
