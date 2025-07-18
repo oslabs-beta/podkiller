@@ -11,23 +11,6 @@ kc.loadFromDefault();
 // create api client
 const k8sApi = kc.makeApiClient(k8s.CoreV1Api);
 
-// test to create and delete a namespace -- this worked
-// let namespace = {
-//   metadata: {
-//     name: 'test3',
-//   }
-// }
-
-// try {
-//   const response = await k8sApi.createNamespace({ body: namespace });
-//   console.log('Namespace created:', response.body);
-//   const res = await k8sApi.readNamespace({ name: namespace.metadata.name });
-//   console.log(res);
-//   await k8sApi.deleteNamespace({ name: namespace.metadata.name });
-// } catch (error) {
-//   console.error('Error creating namespace:', error);
-// }
-
 // 4. FUNCTIONALITY TO DELETE A RANDOM POD
 async function killPod() {
   //namespace is the folder that holds the pods
@@ -60,20 +43,30 @@ async function killPod() {
 
     await k8sApi.deleteNamespacedPod({ name: podName, namespace: namespace });
 
+    // save deletionTime as a variable.
+    const killedNodeDeletionTime = { deletionTime: new Date().toISOString() };
+
     console.log({
       killedPod: podName,
       deletionTime: new Date().toISOString(),
     });
 
-    await simulateDummyRecovery(podName);
+    await measureRecovery(podName, killedNodeDeletionTime);
   } catch (error) {
     console.error('Error during pod deletion:', error.body || error);
   }
 }
 
 // this is to be swapped with sandar's code
-function simulateDummyRecovery(podName) {
+function measureRecovery(podName, killedNodeDeletionTime) {
   console.log(`Simulating recovery for ${podName}...`);
+  //**PICK UP HERE ON SAT */
+  // when podName returns get timestamp
+  // logic that tests when pod is created again. We're looking at the podlist for a name that matches
+  // when that happens record start time
+  const recoveryTime = (newPodReadyTime - killedNodeDeletionTime) / 1000;
+  // make it look like a nice number and return it.
+
   return new Promise((resolve) => {
     setTimeout(() => {
       console.log(`Recovery complete for ${podName}`);
