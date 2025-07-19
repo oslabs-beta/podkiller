@@ -51,11 +51,11 @@ async function killPod() {
 
     await k8sApi.deleteNamespacedPod({ name: podName, namespace: namespace });
     // save deletionTime as a variable.
-    const killedNodeDeletionTime = new Date().toISOString();
+    const killedNodeDeletionTime = new Date(); 
 
     console.log({
       killedPod: podName,
-      deletionTime: new Date().toISOString(),
+      deletionTime: new Date(),
     });
 
     await measureRecovery(pod, killedNodeDeletionTime);
@@ -134,7 +134,7 @@ async function measureRecovery(pod, killedNodeDeletionTime) {
     }
   }
   //*TODO make dates return a number
-  const newPodReadyTime = new Date().toISOString();
+  const newPodReadyTime = new Date()
   const recoveryTime = (newPodReadyTime - killedNodeDeletionTime) / 1000;
   // make it look like a nice number and return it.
   console.log('Total Recovery Time was ', recoveryTime, ' seconds!');
