@@ -29,27 +29,42 @@ async function killPod() {
 
     console.log('this is the items array', res.items);
 
-    if (pods.length === 0) {
+    let numberOfPods = pods.length;
+
+    if (numberOfPods === 0) {
       console.log('No pods matched or found.');
       return;
     }
 
     // Pick a random pod
-    const randomIndex = Math.floor(Math.random() * pods.length);
-    const pod = pods[randomIndex];
+    // const randomIndex = Math.floor(Math.random() * numberOfPods);
+    const pod = pods[0];
     const podName = pod.metadata.name;
 
     console.log(`Killing pod: ${podName}`);
 
     await k8sApi.deleteNamespacedPod({ name: podName, namespace: namespace });
 
+    const podsNew = res.items;
+
+    let newPodNumber = podsNew.length;
+
     // save deletionTime as a variable.
-    const killedNodeDeletionTime = { deletionTime: new Date().toISOString() };
+    const killedNodeDeletionTime = new Date().toISOString();
 
     console.log({
       killedPod: podName,
       deletionTime: new Date().toISOString(),
     });
+
+    const res2 = await k8sApi.listNamespacedPod({ namespace });
+    const pods2 = res2.items;
+
+    console.log(
+      'this is the new items array',
+      res2.items[0].metadata.name,
+      res2.items[1].metadata.name
+    );
 
     await measureRecovery(podName, killedNodeDeletionTime);
   } catch (error) {
@@ -58,21 +73,29 @@ async function killPod() {
 }
 
 // this is to be swapped with sandar's code
-function measureRecovery(podName, killedNodeDeletionTime) {
+async function measureRecovery(podName, killedNodeDeletionTime) {
   console.log(`Simulating recovery for ${podName}...`);
-  //**PICK UP HERE ON SAT */
-  // when podName returns get timestamp
-  // logic that tests when pod is created again. We're looking at the podlist for a name that matches
-  // when that happens record start time
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  while (podName.status.phase !== 'Running') {
+    await sleep(1000);
+
+    if (!namespace) {
+      console.log('Namespace error');
+      break;
+    }
+
+    const res = await k8sApi.listNamespacedPod(namespace);
+    const pods = res.items;
+    podName = pods.metadata.name;
+  }
+
+  const newPodReadyTime = new Date().toISOString();
+
   const recoveryTime = (newPodReadyTime - killedNodeDeletionTime) / 1000;
   // make it look like a nice number and return it.
 
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      console.log(`Recovery complete for ${podName}`);
-      resolve();
-    }, 5000);
-  });
+  return recoveryTime;
 }
 
 killPod();
