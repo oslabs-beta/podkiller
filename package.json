@@ -5,11 +5,11 @@
   "description": "We kill k8 pods",
   "main": "index.js",
   "bin": {
-    "podkiller": "./bin/podkiller.js"
+    "podkiller": "./bin/commander.js"
   },
   "scripts": {
-    "start": "node bin/podkiller.js",
-    "dev": "nodemon bin/podkiller.js",
+    "start": "NODE_NO_WARNINGS=1 node bin/commander.js",
+    "dev": "nodemon bin/commander.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
