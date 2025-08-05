@@ -3,7 +3,9 @@
 // contains all functions we'll need to talk to our cluster (delete pod, etc.)
 
 import * as k8s from '@kubernetes/client-node';
-
+import fs from 'fs/promises';
+import path from 'path';
+import axios from 'axios';
 // 2. LOAD CONFIGURATION
 const kc = new k8s.KubeConfig();
 kc.loadFromDefault();
@@ -15,7 +17,8 @@ const k8sApi = kc.makeApiClient(k8s.CoreV1Api);
 async function killPod() {
   //namespace is the folder that holds the pods
   const namespace = 'default';
-
+  //create empty obj to save the report
+  let report = {};
   try {
     //get a list of the pods in the namespace //TRIPS UP HERE - returns NULL?
     const res = await k8sApi.listNamespacedPod({ namespace });
@@ -51,14 +54,27 @@ async function killPod() {
 
     await k8sApi.deleteNamespacedPod({ name: podName, namespace: namespace });
     // save deletionTime as a variable.
-    const killedNodeDeletionTime = new Date(); 
+    const killedNodeDeletionTime = new Date();
 
     console.log({
       killedPod: podName,
       deletionTime: new Date(),
     });
 
-    await measureRecovery(pod, killedNodeDeletionTime);
+    const { recoveryTime, recoveryPodName } = await measureRecovery(
+      pod,
+      killedNodeDeletionTime
+    );
+    report = {
+      killedPodName: podName,
+      // newPodName: recoveryPod,
+      namespace,
+      deletionTime: killedNodeDeletionTime.toISOString(),
+      recoveryPodName,
+      recoveryTime,
+    };
+    // await saveReport(report);
+    await saveReportToDashboard(report);
   } catch (error) {
     console.error('Error during pod deletion:', error.body || error);
   }
@@ -134,15 +150,39 @@ async function measureRecovery(pod, killedNodeDeletionTime) {
     }
   }
   //*TODO make dates return a number
-  const newPodReadyTime = new Date()
+  const newPodReadyTime = new Date();
   const recoveryTime = (newPodReadyTime - killedNodeDeletionTime) / 1000;
   // make it look like a nice number and return it.
   console.log('Total Recovery Time was ', recoveryTime, ' seconds!');
-  return recoveryTime;
+  return { recoveryTime, recoveryPodName: recoveryPod[0].metadata.name };
 }
 
 killPod();
+// async function saveReport(report) {
+//   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+//   const filename = `chaos-report-${timestamp}.json`;
 
+//   const filePath = path.join('./reports', filename);
+//   try {
+//     await fs.mkdir('./reports', { recursive: true });
+
+//     await fs.writeFile(filePath, JSON.stringify(report, null, 2));
+//     console.log(`Chaos report saved at ${filePath}`);
+//   } catch (error) {
+//     console.error('Failed to save report', error);
+//   }
+// }
+
+async function saveReportToDashboard(report) {
+  try {
+    const respond = await axios.post('http://localhost:8080/reports', report);
+    console.log(
+      `Report send to dashboard: ${respond.data.filename || 'success'}`
+    );
+  } catch (error) {
+    console.error('Failed to send report to dashboard');
+  }
+}
 // when you kill a pod, there is a 30 sec grace period while it is labeled as "terminating"
 // so even though you have a list of 2 pods, when you terminate one and are regenerating a new one,
 // you will have a list of 3 pods temporarily

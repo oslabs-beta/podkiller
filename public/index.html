@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Chaos Report Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <h1>Pods Recovery Report</h1>
+    <canvas id="chaosChart" width="600" height="300"></canvas>
+
+    <script>
+      async function fetchReports() {
+        const response = await fetch('http://localhost:8080/reports');
+        const data = await response.json();
+
+        // Parse each report's recovery time and deletion timestamp
+        const reports = data.reports.map(JSON.parse);
+
+        const labels = reports.map((r) =>
+          new Date(r.deletionTime).toLocaleString()
+        );
+        const recoveryTimes = reports.map((r) => r.recoveryTime);
+        const recoveryPod = reports.map((r) => r.recoveryPodName);
+        const ctx = document.getElementById('chaosChart').getContext('2d');
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: 'Recovery Time (seconds)',
+                data: recoveryTimes,
+                borderColor: 'rgba(255, 99, 132, 1)',
+                fill: false,
+                tension: 0.1,
+              },
+            ],
+          },
+          options: {
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: 'Seconds',
+                },
+              },
+              x: {
+                title: {
+                  display: true,
+                  text: 'Time of Chaos Event',
+                },
+              },
+            },
+            plugins: {
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    const index = context.dataIndex;
+                    const podName = recoveryPod[index]; // use outer-scope variable
+                    const value = context.parsed.y;
+                    return `Pod: ${podName}, Recovery: ${value}s`;
+                  },
+                },
+              },
+            },
+          },
+        });
+      }
+
+      fetchReports();
+    </script>
+  </body>
+</html>
