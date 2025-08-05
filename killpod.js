@@ -12,13 +12,16 @@ kc.loadFromDefault();
 const k8sApi = kc.makeApiClient(k8s.CoreV1Api);
 
 // 4. FUNCTIONALITY TO DELETE A RANDOM POD
-async function killPod() {
+
+//add a conditional variable (if no argument, labelSelector defaults to null)
+async function killPod(labelSelector = null) {
+  console.log('The Label Selector is:', labelSelector); 
   //namespace is the folder that holds the pods
   const namespace = 'default';
 
   try {
-    //get a list of the pods in the namespace //TRIPS UP HERE - returns NULL?
-    const res = await k8sApi.listNamespacedPod({ namespace });
+    //get a list of the pods in the namespace 
+    const res = await k8sApi.listNamespacedPod({ namespace, labelSelector });
 
     console.log('namespace title', namespace);
 
@@ -58,21 +61,21 @@ async function killPod() {
       deletionTime: new Date(),
     });
 
-    await measureRecovery(pod, killedNodeDeletionTime);
+    await measureRecovery(pod, killedNodeDeletionTime, labelSelector);
   } catch (error) {
     console.error('Error during pod deletion:', error.body || error);
   }
 }
 
-// this is to be swapped with sandar's code
-async function measureRecovery(pod, killedNodeDeletionTime) {
+// again, in measure Recovery, labelSelector is optional argument (defaults to null if not included)
+async function measureRecovery(pod, killedNodeDeletionTime, labelSelector = null) {
   console.log(`Simulating recovery for ${pod}...`);
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   // pull in updated list of pods
   // compare updated list against old list, finding newly created pod
   const namespace = 'default';
-  const res = await k8sApi.listNamespacedPod({ namespace });
+  const res = await k8sApi.listNamespacedPod({ namespace, undefined, undefined, undefined, undefined, labelSelector });
   const pods = res.items;
 
   // We need to pull in the old pod name and figure out the new pod name:
@@ -140,8 +143,10 @@ async function measureRecovery(pod, killedNodeDeletionTime) {
   console.log('Total Recovery Time was ', recoveryTime, ' seconds!');
   return recoveryTime;
 }
+//this makes it so when you==>  node killpod.js WhatYouWriteHereIsLabelSelector 
+const labelSelector = process.argv[2] || null; 
 
-killPod();
+killPod(labelSelector);
 
 // when you kill a pod, there is a 30 sec grace period while it is labeled as "terminating"
 // so even though you have a list of 2 pods, when you terminate one and are regenerating a new one,
