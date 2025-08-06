@@ -15,13 +15,16 @@ const k8sApi = kc.makeApiClient(k8s.CoreV1Api);
 
 //add a conditional variable (if no argument, labelSelector defaults to null)
 async function killPod(labelSelector = null) {
-  console.log('The Label Selector is:', labelSelector); 
+  console.log('The Label Selector is:', labelSelector);
   //namespace is the folder that holds the pods
   const namespace = 'default';
 
   try {
-    //get a list of the pods in the namespace 
-    const res = await k8sApi.listNamespacedPod({ namespace, labelSelector });
+    //get a list of the pods in the namespace -- spread operator accounts for labelSelector if present, otherwise it is omitted from req
+    const res = await k8sApi.listNamespacedPod({
+      namespace,
+      ...(labelSelector ? { labelSelector } : {}),
+    });
 
     console.log('namespace title', namespace);
 
@@ -40,8 +43,9 @@ async function killPod(labelSelector = null) {
     }
 
     // Pick a random pod
-    // const randomIndex = Math.floor(Math.random() * numberOfPods);
-    const pod = pods[0];
+    const randomIndex = Math.floor(Math.random() * numberOfPods);
+    console.log('random Index:', randomIndex);
+    const pod = pods[randomIndex];
     const podName = pod.metadata.name;
 
     console.log(
@@ -54,7 +58,7 @@ async function killPod(labelSelector = null) {
 
     await k8sApi.deleteNamespacedPod({ name: podName, namespace: namespace });
     // save deletionTime as a variable.
-    const killedNodeDeletionTime = new Date(); 
+    const killedNodeDeletionTime = new Date();
 
     console.log({
       killedPod: podName,
@@ -68,14 +72,25 @@ async function killPod(labelSelector = null) {
 }
 
 // again, in measure Recovery, labelSelector is optional argument (defaults to null if not included)
-async function measureRecovery(pod, killedNodeDeletionTime, labelSelector = null) {
+async function measureRecovery(
+  pod,
+  killedNodeDeletionTime,
+  labelSelector = null
+) {
   console.log(`Simulating recovery for ${pod}...`);
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   // pull in updated list of pods
   // compare updated list against old list, finding newly created pod
   const namespace = 'default';
-  const res = await k8sApi.listNamespacedPod({ namespace, undefined, undefined, undefined, undefined, labelSelector });
+  const res = await k8sApi.listNamespacedPod({
+    namespace,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    labelSelector,
+  });
   const pods = res.items;
 
   // We need to pull in the old pod name and figure out the new pod name:
@@ -137,14 +152,14 @@ async function measureRecovery(pod, killedNodeDeletionTime, labelSelector = null
     }
   }
   //*TODO make dates return a number
-  const newPodReadyTime = new Date()
+  const newPodReadyTime = new Date();
   const recoveryTime = (newPodReadyTime - killedNodeDeletionTime) / 1000;
   // make it look like a nice number and return it.
   console.log('Total Recovery Time was ', recoveryTime, ' seconds!');
   return recoveryTime;
 }
-//this makes it so when you==>  node killpod.js WhatYouWriteHereIsLabelSelector 
-const labelSelector = process.argv[2] || null; 
+//this makes it so when you==>  node killpod.js WhatYouWriteHereIsLabelSelector
+const labelSelector = process.argv[2] || null;
 
 killPod(labelSelector);
 
