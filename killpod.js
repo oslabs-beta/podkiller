@@ -6,6 +6,10 @@ import * as k8s from '@kubernetes/client-node';
 import fs from 'fs/promises';
 import path from 'path';
 import axios from 'axios';
+import { startPrometheusServer, recoveryTimeMeasurer } from './prometheus.js'; 
+
+startPrometheusServer(); 
+
 // 2. LOAD CONFIGURATION
 const kc = new k8s.KubeConfig();
 kc.loadFromDefault();
@@ -154,6 +158,17 @@ async function measureRecovery(pod, killedNodeDeletionTime) {
   const recoveryTime = (newPodReadyTime - killedNodeDeletionTime) / 1000;
   // make it look like a nice number and return it.
   console.log('Total Recovery Time was ', recoveryTime, ' seconds!');
+
+  // send metrics to prometheus 
+  recoveryTimeMeasurer.set(
+    {
+    killedPod: killedPodName,
+    newPod: recoveryPod[0].metadata.name
+    },
+    recoveryTime 
+ )
+
+
   return { recoveryTime, recoveryPodName: recoveryPod[0].metadata.name };
 }
 
@@ -186,3 +201,5 @@ async function saveReportToDashboard(report) {
 // when you kill a pod, there is a 30 sec grace period while it is labeled as "terminating"
 // so even though you have a list of 2 pods, when you terminate one and are regenerating a new one,
 // you will have a list of 3 pods temporarily
+
+export { killPod}

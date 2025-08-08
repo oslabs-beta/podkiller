@@ -1,0 +1,13 @@
+ 
+global:
+  scrape_interval: 15s # How often to scrape targets (default is 1m)
+# This keeps your built-in Prometheus metrics
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+    - targets: ["localhost:9090"]
+    # This is your custom Node.js podkiller app metrics
+  - job_name: 'podkiller'
+    scrape_interval: 10s
+    static_configs:
+      - targets: [ 'localhost:3000' ] # Port where your JS app exposes /metrics
