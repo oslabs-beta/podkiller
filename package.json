@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "podkiller-cli",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "We kill k8 pods",
   "main": "index.js",
   "bin": {
