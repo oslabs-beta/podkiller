@@ -13,13 +13,19 @@ kc.loadFromDefault();
 const k8sApi = kc.makeApiClient(k8s.CoreV1Api);
 
 // 4. FUNCTIONALITY TO DELETE A RANDOM POD
-async function killPod() {
+//add a conditional variable (if no argument, labelSelector defaults to null)
+
+async function killPod(labelSelector = null) {
+  console.log('The Label Selector is:', labelSelector);
   //namespace is the folder that holds the pods
   const namespace = 'default';
 
   try {
     // Get a list of the pods in the namespace
-    const res = await k8sApi.listNamespacedPod({ namespace });
+    const res = await k8sApi.listNamespacedPod({ 
+      namespace,
+      ...(labelSelector ? { labelSelector } : {}), 
+    });
 
     console.log(chalk.underline.blue('Namespace Title:') + ' ' + chalk.bold.underline(namespace));
 
@@ -40,7 +46,7 @@ async function killPod() {
 
     // Pick a random pod
     const randomIndex = Math.floor(Math.random() * numberOfPods);
-    
+    console.log('Random Index:', randomIndex);
     const pod = pods[randomIndex];
     const podName = pod.metadata.name;
 
@@ -49,7 +55,6 @@ async function killPod() {
     await k8sApi.deleteNamespacedPod({ name: podName, namespace: namespace });
 
     const podsNew = res.items;
-
     let newPodNumber = podsNew.length;
 
     // save deletionTime as a variable.
@@ -73,7 +78,7 @@ async function killPod() {
     if (newPod) {
       console.log(chalk.underline.green('New Replacement Pod:') + ' ' + chalk.bold.underline(newPod.metadata.name));
       // 8/6 DJ - Added recoveryTime variable so backend would communicate value to frontend
-      const recoveryTime = await measureRecovery(newPod.metadata.name, killedNodeDeletionTime, namespace);
+      const recoveryTime = await measureRecovery(newPod.metadata.name, killedNodeDeletionTime, namespace, labelSelector);
       return { success: true, recoveryTime: recoveryTime };
     } else {
       console.log('No new replacement pod found yet');
@@ -87,7 +92,7 @@ async function killPod() {
 }
 
 // this is to be swapped with sandar's code
-async function measureRecovery(podName, deletionTime, namespace) {
+async function measureRecovery(podName, deletionTime, namespace, labelSelector = null) {
   console.log(chalk.italic.grey('     Measuring Ready Time for:'), podName,'...');
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -141,6 +146,13 @@ async function measureRecovery(podName, deletionTime, namespace) {
     console.log(`     ❌ Pod ${podName} did not become ready within ${maxAttempts} seconds`);
     return null;
   }
+}
+
+// This makes it so when you ==> node killpod.js WhatYouWriteHereIsLabelSelector
+// Check if this file is being run directly (not imported)
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const labelSelector = process.argv[2] || null;
+  killPod(labelSelector);
 }
 
 export {killPod};
