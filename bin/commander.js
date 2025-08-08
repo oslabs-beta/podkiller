@@ -27,7 +27,7 @@ program
   .option('-o, --output-format <format>', 'Output format (human|json|markdown)', 'human')
   .option('-v, --verbose', 'Verbose output')
   .action(async (options) => {
-    console.log(chalk.bold.black.bgWhite('🚀 PodKiller Launching...'));
+    console.log(chalk.bold.black.bgGrey('🚀 PodKiller Launching...'));
     await runPodKiller(options);
   });
 

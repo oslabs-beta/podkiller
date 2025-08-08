@@ -9,7 +9,7 @@ import chalk from 'chalk';
 const kc = new k8s.KubeConfig();
 kc.loadFromDefault();
 
-// create api client
+// 3. Create API client
 const k8sApi = kc.makeApiClient(k8s.CoreV1Api);
 
 // 4. FUNCTIONALITY TO DELETE A RANDOM POD
@@ -18,14 +18,14 @@ async function killPod() {
   const namespace = 'default';
 
   try {
-    //get a list of the pods in the namespace It's har//TRIPS UP HERE - returns NULL?
+    // Get a list of the pods in the namespace
     const res = await k8sApi.listNamespacedPod({ namespace });
 
     console.log(chalk.underline.blue('Namespace Title:') + ' ' + chalk.bold.underline(namespace));
 
     if (!namespace) return 'Namespace is required';
 
-    // assign it to var
+    // Assign it to var
     const pods = res.items;
     console.log(chalk.italic.cyan('     Original Pods List: '), pods.map(p => p.metadata.name).join(' /// '));
     let numberOfPods = pods.length;
@@ -39,8 +39,9 @@ async function killPod() {
     const originalPodNames = pods.map(p => p.metadata.name);
 
     // Pick a random pod
-    // const randomIndex = Math.floor(Math.random() * numberOfPods);
-    const pod = pods[0];
+    const randomIndex = Math.floor(Math.random() * numberOfPods);
+    
+    const pod = pods[randomIndex];
     const podName = pod.metadata.name;
 
     console.log(chalk.underline.red('Killing Pod:') + ' ' + chalk.bold.underline(podName));
@@ -55,7 +56,7 @@ async function killPod() {
     const killedNodeDeletionTime = new Date().toISOString();
 
     console.log(chalk.magenta.italic('     Killed Pod: ') + podName);
-    console.log(chalk.magenta.italic('     Deletion Time: ') + killedNodeDeletionTime);
+    console.log(chalk.magenta.italic('     Deletion Stamp: ') + killedNodeDeletionTime);
 
     // 7/31 DJ - Wait a moment for Kubernetes to start creating replacement
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -71,13 +72,17 @@ async function killPod() {
 
     if (newPod) {
       console.log(chalk.underline.green('New Replacement Pod:') + ' ' + chalk.bold.underline(newPod.metadata.name));
-      await measureRecovery(newPod.metadata.name, killedNodeDeletionTime, namespace);
+      // 8/6 DJ - Added recoveryTime variable so backend would communicate value to frontend
+      const recoveryTime = await measureRecovery(newPod.metadata.name, killedNodeDeletionTime, namespace);
+      return { success: true, recoveryTime: recoveryTime };
     } else {
       console.log('No new replacement pod found yet');
+      return { success: true, recoveryTime: null };
     }
 
   } catch (error) {
     console.error('Error during pod deletion:', error.body || error);
+    return { success: false, error: error.message };
   }
 }
 
@@ -116,7 +121,7 @@ async function measureRecovery(podName, deletionTime, namespace) {
           const recoveryTimeSeconds = (readyTimeMs - deletionTimeMs) / 1000;
           
           console.log(`     ✅ Pod ${podName} is ${chalk.bold.italic.underline.green('Ready')}!`);
-          console.log(`     🕐 Recovery time: ${chalk.bold.italic.underline.green(recoveryTimeSeconds.toFixed(2), 'seconds')}`);
+          console.log(`     🕐 Recovery Time: ${chalk.bold.italic.underline.green(recoveryTimeSeconds.toFixed(2), 'seconds')}`);
           
           return recoveryTimeSeconds;
         }

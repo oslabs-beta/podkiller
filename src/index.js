@@ -12,9 +12,9 @@ export async function runPodKiller(options = {}) {
   }
 
   try {
-    console.log(chalk.bold.red.bgWhite('🎯 Identifying Target...'));
+    console.log(chalk.bold.red.bgGrey('🎯 Identifying Target...'));
     await killPod();
-    console.log(chalk.bold.green.bgWhite('✅ Mission Complete!'));
+    console.log(chalk.bold.green.bgGrey('✅ Mission Complete!'));
   } catch (error) {
     console.error(chalk.red.bgWhite('❌ Error:'), error.message);
     process.exit(1);
