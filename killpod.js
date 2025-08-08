@@ -163,7 +163,8 @@ async function measureRecovery(pod, killedNodeDeletionTime) {
   recoveryTimeMeasurer.set(
     {
     killedPod: killedPodName,
-    newPod: recoveryPod[0].metadata.name
+    newPod: recoveryPod[0].metadata.name,
+    recoveryTime: recoveryTime, 
     },
     recoveryTime 
  )

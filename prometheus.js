@@ -14,21 +14,21 @@ register.setDefaultLabels({
 client.collectDefaultMetrics({ register })
 
 const recoveryTimeMeasurer = new client.Gauge({
-  name: 'podRecoveryTimes',
+  name: 'pod_recovery_time_seconds',
   help: 'Seconds it takes to start a new pod after deletion',
   registers: [register],
-  labelNames: ['killedPod', 'newPod'],
+  labelNames: ['killedPod', 'newPod', 'recoveryTime'],
 })
 
 // create an express app
 const app = express()
 
 app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', register.contentType);
   const result = await register.metrics()
   res.send(result)
 })
 
-// start and connect to promethesus server 
 
 // start the server
 const startPrometheusServer = () => {
