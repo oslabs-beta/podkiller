@@ -79,6 +79,17 @@ async function killPod(labelSelector = null) {
       console.log(chalk.underline.green('New Replacement Pod:') + ' ' + chalk.bold.underline(newPod.metadata.name));
       // 8/6 DJ - Added recoveryTime variable so backend would communicate value to frontend
       const recoveryTime = await measureRecovery(newPod.metadata.name, killedNodeDeletionTime, namespace, labelSelector);
+        // Sandar's report variable
+        const report = {
+          killedPodName: podName,
+          namespace,
+          deletionTime: killedNodeDeletionTime,
+          recoveryPodName: newPod ? newPod.metadata.name : null,
+          recoveryTime: recoveryTime
+        };
+
+        // Sandar's dashboard saving function
+        await saveReportToDashboard(report);
       return { success: true, recoveryTime: recoveryTime };
     } else {
       console.log('No new replacement pod found yet');
@@ -91,61 +102,49 @@ async function killPod(labelSelector = null) {
   }
 }
 
-// this is to be swapped with sandar's code
+// Sandar's measureRecovery function
 async function measureRecovery(podName, deletionTime, namespace, labelSelector = null) {
   console.log(chalk.italic.grey('     Measuring Ready Time for:'), podName,'...');
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   // 7/31 DJ - added some flags for the while loop
-  let podReady = false;
   let attempts = 0;
-  const maxAttempts = 60
+  
+  // Get updated list and filter out terminating pods
+  const res = await k8sApi.listNamespacedPod({ namespace });
+  const pods = res.items;
+  
+  const alivePods = pods.filter(
+    (pod) => !pod.metadata.deletionTimestamp
+  );
 
-  while (!podReady && attempts < maxAttempts) {
-    try {
-      // Get the specific new pod
-      const podRes = await k8sApi.readNamespacedPod({ 
-        name: podName, 
-        namespace: namespace 
-      });
-      
-      const pod = podRes;
-      
-      if (pod.status && pod.status.phase === 'Running') {
-        // Check if all containers are ready
-        const containerStatuses = pod.status.containerStatuses || [];
-        const allContainersReady = containerStatuses.every(status => status.ready);
-        
-        if (allContainersReady) {
-          podReady = true;
-          const readyTime = new Date().toISOString();
-          
-          // Calculate recovery time
-          const deletionTimeMs = new Date(deletionTime).getTime();
-          const readyTimeMs = new Date(readyTime).getTime();
-          const recoveryTimeSeconds = (readyTimeMs - deletionTimeMs) / 1000;
-          
-          console.log(`     ✅ Pod ${podName} is ${chalk.bold.italic.underline.green('Ready')}!`);
-          console.log(`     🕐 Recovery Time: ${chalk.bold.italic.underline.green(recoveryTimeSeconds.toFixed(2), 'seconds')}`);
-          
-          return recoveryTimeSeconds;
-        }
-      }
-      
-      console.log(`     ⏳ Reading Status: ${chalk.underline.italic.yellow(pod.status?.phase || 'Unknown')} (attempt ${attempts + 1})`);
-      
-    } catch (error) {
-      console.log(`     ⚠️  Error checking pod status: ${chalk.red(error.message)}`);
-    }
-    
-    attempts++;
-    await sleep(1000);
-  }
-
-  if (!podReady) {
-    console.log(`     ❌ Pod ${podName} did not become ready within ${maxAttempts} seconds`);
+  const recoveryPod = alivePods.filter((pod) => pod.status.phase === 'Pending');
+  
+  if (recoveryPod.length === 0) {
+    console.log('No pending pods found');
     return null;
   }
+
+  // Monitor until pod is ready
+  while (recoveryPod[0].status.phase === 'Pending') {
+    console.log(`     ⏳ Reading Status: ${chalk.underline.italic.yellow(recoveryPod[0].status?.phase || 'Unknown')} (attempt ${attempts + 1})`);
+    await sleep(1000);
+    const res = await k8sApi.listNamespacedPod({ namespace });
+    const pods = res.items;
+
+    const newTarget = pods.filter(
+      (pod) => pod.metadata.name === recoveryPod[0].metadata.name
+    );
+    recoveryPod[0].status.phase = newTarget[0].status.phase;
+  }
+
+  const newPodReadyTime = new Date();
+  const recoveryTime = (newPodReadyTime - new Date(deletionTime)) / 1000;
+  
+  console.log(`     ✅ Pod ${podName} is ${chalk.bold.italic.underline.green('Ready')}!`);
+  console.log(`     ✅ Recovery Time: ${chalk.bold.italic.underline.green(recoveryTime.toFixed(2), 'seconds')}`);
+  
+  return recoveryTime;
 }
 
 // This makes it so when you ==> node killpod.js WhatYouWriteHereIsLabelSelector
@@ -153,6 +152,17 @@ async function measureRecovery(podName, deletionTime, namespace, labelSelector =
 if (import.meta.url === `file://${process.argv[1]}`) {
   const labelSelector = process.argv[2] || null;
   killPod(labelSelector);
+}
+
+// Sandar's saveReportToDashboard function
+async function saveReportToDashboard(report) {
+  try {
+    const axios = await import('axios');
+    const respond = await axios.default.post('http://localhost:3000/api/reports', report);
+    console.log(`Report sent to dashboard: ${respond.data.filename || 'success'}`);
+  } catch (error) {
+    console.error('Failed to send report to dashboard:', error.message);
+  }
 }
 
 export {killPod};
