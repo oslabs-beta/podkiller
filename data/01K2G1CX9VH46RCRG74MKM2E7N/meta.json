@@ -1,0 +1,17 @@
+{
+	"ulid": "01K2G1CX9VH46RCRG74MKM2E7N",
+	"minTime": 1755021606594,
+	"maxTime": 1755028800000,
+	"stats": {
+		"numSamples": 283997,
+		"numSeries": 866,
+		"numChunks": 3469
+	},
+	"compaction": {
+		"level": 1,
+		"sources": [
+			"01K2G1CX9VH46RCRG74MKM2E7N"
+		]
+	},
+	"version": 1
+}
