@@ -6,9 +6,9 @@ import * as k8s from '@kubernetes/client-node';
 import fs from 'fs/promises';
 import path from 'path';
 import axios from 'axios';
-import { startPrometheusServer, recoveryTimeMeasurer } from './prometheus.js'; 
+import { startPrometheusServer, recoveryTimeMeasurer } from './prometheus.js';
 
-startPrometheusServer(); 
+startPrometheusServer();
 
 // 2. LOAD CONFIGURATION
 const kc = new k8s.KubeConfig();
@@ -159,18 +159,22 @@ async function measureRecovery(pod, killedNodeDeletionTime) {
   // make it look like a nice number and return it.
   console.log('Total Recovery Time was ', recoveryTime, ' seconds!');
 
-  // send metrics to prometheus 
+  // send metrics to prometheus
   recoveryTimeMeasurer.set(
     {
-    killedPod: killedPodName,
-    newPod: recoveryPod[0].metadata.name,
-    recoveryTime: recoveryTime, 
+      killedPod: killedPodName,
+      newPod: recoveryPod[0].metadata.name,
+      recoveryTime: recoveryTime,
+      recoveryTimestamp: newPodReadyTime,
     },
-    recoveryTime 
- )
+    recoveryTime
+  );
 
-
-  return { recoveryTime, recoveryPodName: recoveryPod[0].metadata.name };
+  return {
+    recoveryTime,
+    recoveryPodName: recoveryPod[0].metadata.name,
+    newPodReadyTime,
+  };
 }
 
 killPod();
@@ -203,4 +207,4 @@ async function saveReportToDashboard(report) {
 // so even though you have a list of 2 pods, when you terminate one and are regenerating a new one,
 // you will have a list of 3 pods temporarily
 
-export { killPod}
+export { killPod };

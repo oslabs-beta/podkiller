@@ -1,0 +1,19 @@
+# Grafana Cloud Private Data Source Connect configuration
+
+agent:
+  # Unique name for this agent (choose any name you like)
+  name: local-prometheus-agent
+  # Path where logs will be stored
+  logs:
+    level: info
+
+connections:
+  - id: prometheus-local
+    type: prometheus
+    # The URL to your local Prometheus instance
+    url: http://localhost:9090
+    # Grafana Cloud endpoint for your data source (provided in Grafana Cloud when adding the data source)
+    remote_url: <GRAFANA_CLOUD_PDC_ENDPOINT>
+    # Auth token provided by Grafana Cloud when creating the connection
+    auth:
+      bearer_token: <     ./pdc -token ${GCLOUD_PDC_SIGNING_TOKEN} -cluster ${GCLOUD_PDC_CLUSTER} -gcloud-hosted-grafana-id ${GCLOUD_HOSTED_GRAFANA_ID}

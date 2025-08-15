@@ -1,0 +1,7 @@
+{
+  "killedPodName": "dummy-app-75dbb8f98f-ffmkj",
+  "namespace": "default",
+  "deletionTime": "2025-08-15T02:25:58.788Z",
+  "recoveryPodName": "dummy-app-75dbb8f98f-t2zwh",
+  "recoveryTime": 3.106
+}
