@@ -10,7 +10,7 @@
   "scripts": {
     "start": "NODE_NO_WARNINGS=1 node bin/commander.js",
     "dev": "nodemon bin/commander.js",
-    "dashboard": "node src/server.js",
+    "dashboard": "nodemon src/server.js --watch src/server.js & open http://localhost:3000",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -23,6 +23,7 @@
   "license": "MIT",
   "dependencies": {
     "@kubernetes/client-node": "^1.3.0",
+    "axios": "^1.11.0",
     "chalk": "^5.4.1",
     "commander": "^14.0.0",
     "express": "^5.1.0",

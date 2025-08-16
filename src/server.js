@@ -40,7 +40,7 @@ app.get('/api/pods/:namespace', async (req, res) => {
         });
         const pods = result.items.map(pod => ({
             name: pod.metadata.name,
-            status: pod.status.phase,
+            status: pod.metadata.deletionTimestamp ? 'Terminating' : pod.status.phase,
             namespace: pod.metadata.namespace
         }));
         res.json({ pods });
@@ -61,6 +61,43 @@ app.post('/api/kill', async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
+});
+
+// Sandar's GET reports
+app.get('/api/reports', async (req, res) => {
+  try {
+    const fs = await import('fs/promises');
+    const path = await import('path');
+    
+    const files = await fs.default.readdir('./reports');
+    const reports = await Promise.all(
+      files
+        .filter((file) => file.endsWith('.json'))
+        .map((file) => fs.default.readFile(path.default.join('./reports', file), 'utf8'))
+    );
+    res.status(200).json({ reports: reports.map(r => JSON.parse(r)) });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to load reports' });
+  }
+});
+
+// Sandar's POST reports  
+app.post('/api/reports', async (req, res) => {
+  const report = req.body;
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const filename = `chaos-report-${timestamp}.json`;
+  
+  try {
+    const fs = await import('fs/promises');
+    await fs.default.mkdir('./reports', { recursive: true });
+    await fs.default.writeFile(
+      `./reports/${filename}`,
+      JSON.stringify(report, null, 2)
+    );
+    res.status(201).json({ message: 'Report saved', filename });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to save report' });
+  }
 });
 
 app.listen(3000, () => {
