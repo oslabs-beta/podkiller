@@ -1,50 +1,55 @@
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 /* Canvas for the dynamic starfield */
 #starfield-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -10;
-    background: #000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -10;
+  background: #000;
 }
 
 /* Cockpit Overlay */
 .cockpit-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none; /* Allows clicks to pass through to the dashboard */
-    z-index: -5; /* Sits on top of the starfield, but below the dashboard */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* Allows clicks to pass through to the dashboard */
+  z-index: -5; /* Sits on top of the starfield, but below the dashboard */
 }
 
 /* Image inside Overlay */
 .cockpit-overlay img {
-    /* Set a zoom level, e.g., 150% */
-    width: 140%; 
-    height: 150%; 
-    
-    /* Position the image to show the center */
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+  /* Set a zoom level, e.g., 150% */
+  width: 140%;
+  height: 150%;
+
+  /* Position the image to show the center */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 /* --- Laser Beams --- */
 .laser-beam {
   position: fixed;
-  width: 56%;        
-  height: 75px;           
-  background: linear-gradient(to bottom, rgb(17, 255, 13) 0%, white 50%, rgb(16, 255, 12) 100%);
+  width: 56%;
+  height: 75px;
+  background: linear-gradient(
+    to bottom,
+    rgb(17, 255, 13) 0%,
+    white 50%,
+    rgb(16, 255, 12) 100%
+  );
   opacity: 1;
   z-index: -7;
   clip-path: polygon(0% 0%, 100% 45%, 100% 55%, 0% 100%);
@@ -68,8 +73,7 @@
 }
 
 #laser-top-left.firing {
-  animation: 
-    laser-fire-top-left 0.1s ease-out forwards,
+  animation: laser-fire-top-left 0.1s ease-out forwards,
     laser-fade 0.1s ease-out 0.1s forwards;
 }
 
@@ -92,8 +96,7 @@
 }
 
 #laser-top-right.firing {
-  animation: 
-    laser-fire-top-right 0.1s ease-out forwards,
+  animation: laser-fire-top-right 0.1s ease-out forwards,
     laser-fade 0.1s ease-out 0.1s forwards;
 }
 
@@ -124,8 +127,7 @@
 }
 
 #laser-bottom-left.firing {
-  animation: 
-    laser-fire-bottom-left 0.1s ease-out forwards,
+  animation: laser-fire-bottom-left 0.1s ease-out forwards,
     laser-fade 0.1s ease-out 0.1s forwards;
 }
 
@@ -139,8 +141,7 @@
 }
 
 #laser-bottom-right.firing {
-  animation: 
-    laser-fire-bottom-right 0.1s ease-out forwards,
+  animation: laser-fire-bottom-right 0.1s ease-out forwards,
     laser-fade 0.1s ease-out 0.1s forwards;
 }
 
@@ -155,146 +156,146 @@
 
 /* Styling for all headers and titles to match the sci-fi theme */
 h2 {
-    font-family: 'Orbitron', sans-serif;
-    text-transform: uppercase;
-    color: #00ff88;
-    text-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
-    letter-spacing: 2px;
-    margin-bottom: 0.5rem;
-    font-size: 1.2rem;
+  font-family: 'Orbitron', sans-serif;
+  text-transform: uppercase;
+  color: #00ff88;
+  text-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+  letter-spacing: 2px;
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
 }
 
 /* Style for the dashboard container to sit on top of the background */
 .dashboard-container {
-    position: relative;
-    z-index: 10;
-    padding: 2rem;
-    min-height: calc(100vh - 1rem);
-    max-height: calc(100vh - 1rem);
-    background: transparent;
-    overflow: hidden; 
+  position: relative;
+  z-index: 10;
+  padding: 2rem;
+  min-height: calc(100vh - 1rem);
+  max-height: calc(100vh - 1rem);
+  background: transparent;
+  overflow: hidden;
 }
 
 body {
-    font-family: "Share Tech", sans-serif;
-    font-weight: 600;
-    background: #000;
-    height: 100vh;
-    padding: 1rem;
-    overflow: hidden;
+  font-family: 'Share Tech', sans-serif;
+  font-weight: 600;
+  background: #000;
+  height: 100vh;
+  padding: 1rem;
+  overflow: hidden;
 }
 
 .container {
-    height: calc(100% - 1rem);
-    display: flex;
-    flex-direction: column;
+  height: calc(100% - 1rem);
+  display: flex;
+  flex-direction: column;
 }
 
 h1 {
-    color: white;
-    margin-bottom: 1rem;
-    font-size: 2rem;
-    text-align: center;
-    flex-shrink: 0;
+  color: white;
+  margin-bottom: 1rem;
+  font-size: 2rem;
+  text-align: center;
+  flex-shrink: 0;
 }
 
 .dashboard {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 1.5rem;
-    height: calc(100vh - 6rem);
-    overflow: visible;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1.5rem;
+  height: calc(100vh - 6rem);
+  overflow: visible;
 }
 
 .left-column {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    overflow: hidden;
-    max-width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow: hidden;
+  max-width: 90%;
 }
 
 .center-column {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    overflow: hidden;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow: hidden;
+  align-items: center;
+  justify-content: center;
 }
 
 .right-column {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    max-width: 90%;
-    margin-left: 2rem;
-    background: transparent;
-    border: double rgb(122, 223, 231) 3px;
-    border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 90%;
+  margin-left: 2rem;
+  background: transparent;
+  border: double rgb(122, 223, 231) 3px;
+  border-radius: 12px;
 }
 
 .panel {
-    background: transparent;
-    border: double rgb(122, 223, 231) 3px;
-    border-radius: 12px;
-    padding: 0.5rem;
-    overflow: visible;
-    display: flex;
-    flex-direction: column;
+  background: transparent;
+  border: double rgb(122, 223, 231) 3px;
+  border-radius: 12px;
+  padding: 0.5rem;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
 }
 
 .panel h2 {
-    margin-bottom: 0.5rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #068c4d;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    font-size: 1rem;
-    flex-shrink: 0;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #068c4d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  flex-shrink: 0;
 }
 
 .panel.control {
-    border: double rgb(122, 223, 231) 3px;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.03);
-    display: flex;
-    flex-grow: 1;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 3rem;
+  border: double rgb(122, 223, 231) 3px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 3rem;
 }
 
 .panel.activity {
-    background: rgba(255, 255, 255, 0.03);
-    flex: 1 1 50%;
-    display: flex;
-    flex-direction: column;
-    border-radius: 12px;
-    min-height: 0;
+  background: rgba(255, 255, 255, 0.03);
+  flex: 1 1 50%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  min-height: 0;
 }
 
 .panel.analytics {
-    flex: 1;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    overflow: auto; 
-    display: flex;
-    flex-direction: column;
-    max-height: 50%;
+  flex: 1;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  max-height: 50%;
 }
 
 .panel.analytics::-webkit-scrollbar,
 .chart-container::-webkit-scrollbar,
 .log-entries::-webkit-scrollbar,
 .pods-grid::-webkit-scrollbar {
-    width: 3px;
+  width: 3px;
 }
 
 .pods-grid-wrapper::-webkit-scrollbar {
-    width: 5px;
+  width: 5px;
 }
 
 .pods-grid-wrapper::-webkit-scrollbar-track,
@@ -302,619 +303,620 @@ h1 {
 .chart-container::-webkit-scrollbar-track,
 .log-entries::-webkit-scrollbar-track,
 .pods-grid::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
 }
 
 .panel.analytics::-webkit-scrollbar-thumb,
 .chart-container::-webkit-scrollbar-thumb,
 .log-entries::-webkit-scrollbar-thumb,
 .pods-grid::-webkit-scrollbar-thumb {
-    border-radius: 4px;
-    background: rgba(245, 45, 255, 0.633);
+  border-radius: 4px;
+  background: rgba(245, 45, 255, 0.633);
 }
 
 .panel.analytics::-webkit-scrollbar-thumb:hover,
 .chart-container::-webkit-scrollbar-thumb:hover,
 .log-entries::-webkit-scrollbar-thumb:hover,
 .pods-grid::-webkit-scrollbar-thumb:hover {
-    background: rgba(119, 0, 255, 0.616);
+  background: rgba(119, 0, 255, 0.616);
 }
 
 .pods-grid-wrapper::-webkit-scrollbar-thumb {
-    border-radius: 4px;
-    background: rgb(0, 200, 255);
+  border-radius: 4px;
+  background: rgb(0, 200, 255);
 }
 
 .pods-grid-wrapper::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 128, 255, 0.616);
+  background: rgba(0, 128, 255, 0.616);
 }
 
 .panel.statistics {
-    flex: 1;
-    border-radius: 12px;
-    overflow: visible; 
-    display: flex;
-    flex-direction: column;
+  flex: 1;
+  border-radius: 12px;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
 }
 
 #statistics {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 20px;
-    height: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 20px;
+  height: 100%;
 }
 
 .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
 }
 
 .stat-item {
-    text-align: center;
-    padding: 15px;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    transition: all 0.3s ease;
+  text-align: center;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease;
 }
 
 .stat-item:hover {
-    background: rgba(255, 255, 255, 0.05);
-    transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
 }
 
 .stat-number {
-    font-size: 2em;
-    font-weight: bold;
-    color: #00ff88;
-    margin-bottom: 5px;
-    text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+  font-size: 2em;
+  font-weight: bold;
+  color: #00ff88;
+  margin-bottom: 5px;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
 }
 
 .stat-label {
-    font-size: 0.9em;
-    color: rgba(255, 255, 255, 0.7);
-    text-transform: uppercase;
-    letter-spacing: 1px;
+  font-size: 0.9em;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .reset-stats-btn {
-    background: rgba(239, 68, 68, 0.2);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    color: #ef4444;
-    padding: 8px 16px;
-    border-radius: 4px;
-    font-size: 0.8em;
-    cursor: pointer;
-    margin-top: 15px;
-    transition: all 0.3s ease;
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  cursor: pointer;
+  margin-top: 15px;
+  transition: all 0.3s ease;
 }
 
 .reset-stats-btn:hover {
-    background: rgba(239, 68, 68, 0.3);
-    border-color: rgba(239, 68, 68, 0.5);
+  background: rgba(239, 68, 68, 0.3);
+  border-color: rgba(239, 68, 68, 0.5);
 }
 
 .status-card {
-    display: flex;
-    justify-content: center;
-    background: transparent;
-    font-size: 0.85rem;
+  display: flex;
+  justify-content: center;
+  background: transparent;
+  font-size: 0.85rem;
 }
 
 .status-indicator {
-    display: inline-flex;
-    background: transparent;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.7rem;
-    border: 3px double rgb(137, 137, 137);
-    padding: 0.5rem;
-    border-radius: 5px;
+  display: inline-flex;
+  background: transparent;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.7rem;
+  border: 3px double rgb(137, 137, 137);
+  padding: 0.5rem;
+  border-radius: 5px;
 }
 
 .status-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: #ef4444;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ef4444;
 }
 
 .status-dot.connected {
-    background: #10b981;
-    animation: pulse 2s infinite;
+  background: #10b981;
+  animation: pulse 2s infinite;
 }
 
 @keyframes pulse {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.5;
-    }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 /* Styling for the namespace selector container and label */
 .namespace-selector label {
-    display: flex;
-    justify-content: center;
-    color: #0084ff; 
-    font-family: "Asimovian", sans-serif;
-    font-weight: 400;
-    font-style: normal;
-    font-size: 0.9rem;
-    text-shadow: 0 0 5px #2a5fbb80; /* Subtle glow */
-    letter-spacing: 0.5px;
-    margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: center;
+  color: #0084ff;
+  font-family: 'Asimovian', sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 0.9rem;
+  text-shadow: 0 0 5px #2a5fbb80; /* Subtle glow */
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
 }
 
 /* Styling for the select dropdown itself */
 #namespace-select {
-    display: flex;
-    justify-self: center;
-    width: 150%;
-    padding: 0.1rem;
-    background: transparent;
-    border: 2px groove #9bcfffa2; 
-    color: #1ea6d3;
-    font-family: "Kode Mono", monospace;
-    font-optical-sizing: auto; 
-    font-weight: 300;
-    font-size: 0.8rem;
-    border-radius: 4px;
-    -webkit-appearance: none; /* Removes default dropdown arrow in Webkit browsers */
-    -moz-appearance: none; /* Removes default dropdown arrow in Firefox */
-    appearance: none; /* Removes default dropdown arrow */
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-align: center;
+  display: flex;
+  justify-self: center;
+  width: 150%;
+  padding: 0.1rem;
+  background: transparent;
+  border: 2px groove #9bcfffa2;
+  color: #1ea6d3;
+  font-family: 'Kode Mono', monospace;
+  font-optical-sizing: auto;
+  font-weight: 300;
+  font-size: 0.8rem;
+  border-radius: 4px;
+  -webkit-appearance: none; /* Removes default dropdown arrow in Webkit browsers */
+  -moz-appearance: none; /* Removes default dropdown arrow in Firefox */
+  appearance: none; /* Removes default dropdown arrow */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
 }
 
 /* Add a hover effect to the select dropdown */
 #namespace-select:hover {
-    box-shadow: 0 0 10px #3896c170; /* Glowing effect on hover */
+  box-shadow: 0 0 10px #3896c170; /* Glowing effect on hover */
 }
 
 /* Style for the options within the dropdown */
 #namespace-select option {
-    background: black;
-    color: #00c3ff;
-    padding: 0.2rem;
+  background: black;
+  color: #00c3ff;
+  padding: 0.2rem;
 }
 
 button {
-    padding: 0.5rem;
-    border: none;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 button:active {
-    transform: translateY(0);
+  transform: translateY(0);
 }
 
 button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .btn-primary {
-    background: #667eea;
-    color: white;
+  background: #667eea;
+  color: white;
 }
 
 .btn-primary:hover {
-    background: #5a67d8;
+  background: #5a67d8;
 }
 
 @keyframes glitch {
-    0% {
-        text-shadow: 2px 2px #ef4444, -2px -2px #00ff88;
-        transform: skew(-5deg);
-    }
-    25% {
-        text-shadow: -2px -2px #ef4444, 2px 2px #00ff88;
-        transform: skew(5deg);
-    }
-    50% {
-        text-shadow: 2px -2px #ef4444, -2px 2px #00ff88;
-        transform: skew(-5deg);
-    }
-    75% {
-        text-shadow: -2px 2px #ef4444, 2px -2px #00ff88;
-        transform: skew(5deg);
-    }
-    100% {
-        text-shadow: 2px 2px #ef4444, -2px -2px #00ff88;
-        transform: skew(-5deg);
-    }
+  0% {
+    text-shadow: 2px 2px #ef4444, -2px -2px #00ff88;
+    transform: skew(-5deg);
+  }
+  25% {
+    text-shadow: -2px -2px #ef4444, 2px 2px #00ff88;
+    transform: skew(5deg);
+  }
+  50% {
+    text-shadow: 2px -2px #ef4444, -2px 2px #00ff88;
+    transform: skew(-5deg);
+  }
+  75% {
+    text-shadow: -2px 2px #ef4444, 2px -2px #00ff88;
+    transform: skew(5deg);
+  }
+  100% {
+    text-shadow: 2px 2px #ef4444, -2px -2px #00ff88;
+    transform: skew(-5deg);
+  }
 }
 
 .btn-danger {
-    font-family: "Asimovian", sans-serif;
-    font-weight: 400;
-    font-style: normal;
-    text-shadow: 2px 2px 2px #de2e2e;
-    background: linear-gradient(45deg, #ef444436, #dc2626);
-    color: rgb(221, 199, 199);
-    font-size: 1.2rem;
-    padding: 2rem 1rem;
-    margin: 2rem;
-    border: 3px double #ef4444;
-    border-radius: 45%;
-    box-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s ease;
+  font-family: 'Asimovian', sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  text-shadow: 2px 2px 2px #de2e2e;
+  background: linear-gradient(45deg, #ef444436, #dc2626);
+  color: rgb(221, 199, 199);
+  font-size: 1.2rem;
+  padding: 2rem 1rem;
+  margin: 2rem;
+  border: 3px double #ef4444;
+  border-radius: 45%;
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
 }
 
 .btn-danger:hover {
-    box-shadow: 0 0 25px rgba(239, 68, 68, 0.8), 0 0 50px rgba(239, 68, 68, 0.4);
-    animation: glitch 0.5s infinite linear;
-    transform: none; /* Override the default hover transform */
+  box-shadow: 0 0 25px rgba(239, 68, 68, 0.8), 0 0 50px rgba(239, 68, 68, 0.4);
+  animation: glitch 0.5s infinite linear;
+  transform: none; /* Override the default hover transform */
 }
 
 .btn-danger:active {
-    animation: none;
-    transform: translateY(0);
+  animation: none;
+  transform: translateY(0);
 }
 
 /* Container for the Pods section */
 .pods-section {
-    position: relative;
-    padding: 2.2rem 1rem;
-    background: transparent;
-    border: none;
-    border-radius: 0;
-    min-height: 0;
-    flex-direction: column;
-    overflow: visible; /* let pseudo-elements show */
+  position: relative;
+  padding: 2.2rem 1rem;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  min-height: 0;
+  flex-direction: column;
+  overflow: visible; /* let pseudo-elements show */
 }
 
 /* Reticle crosshairs */
 .pods-section::before,
 .pods-section::after {
-    content: '';
-    position: absolute;
-    background-color: rgba(255, 41, 237, 0.644);
-    opacity: 0.2;
-    box-shadow: 0 0 10px rgba(255, 41, 237, 0.644);
-    animation: reticle-pulse 4s linear infinite; 
-    z-index: 1; /* Puts the lines behind the main content */
+  content: '';
+  position: absolute;
+  background-color: rgba(255, 41, 237, 0.644);
+  opacity: 0.2;
+  box-shadow: 0 0 10px rgba(255, 41, 237, 0.644);
+  animation: reticle-pulse 4s linear infinite;
+  z-index: 1; /* Puts the lines behind the main content */
 }
 
 /* Horizontal line */
 .pods-section::before {
-    top: 50%;
-    left: 0;
-    right: 0;
-    height: 2px;
-    transform: translateY(-50%); /* Centers the line vertically */
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  transform: translateY(-50%); /* Centers the line vertically */
 }
 
 /* Vertical line */
 .pods-section::after {
-    top: 0;
-    bottom: 0;
-    left: 50%;
-    width: 2px; 
-    transform: translateX(-50%); /* Centers the line horizontally */
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%); /* Centers the line horizontally */
 }
 
 /* Position the helper divs correctly */
 .pods-corners {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    pointer-events: none; /* don't block clicks */
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none; /* don't block clicks */
 }
 
 /* Shared pseudo-element base */
 .pods-corners::before,
 .pods-corners::after {
-    content: '';
-    position: absolute;
-    width: 25px;
-    height: 25px;
-    border-style: solid;
-    border-color: rgba(255, 41, 237, 0.644);
-    z-index: 10;
-    box-shadow: 0 0 10px #c1713890;
-    animation: reticle-pulse 4s linear infinite;
+  content: '';
+  position: absolute;
+  width: 25px;
+  height: 25px;
+  border-style: solid;
+  border-color: rgba(255, 41, 237, 0.644);
+  z-index: 10;
+  box-shadow: 0 0 10px #c1713890;
+  animation: reticle-pulse 4s linear infinite;
 }
 
 /* Top corners */
 .pods-corners.top::before {
-    top: -3px;
-    left: -3px;
-    border-width: 3px 0 0 3px;
+  top: -3px;
+  left: -3px;
+  border-width: 3px 0 0 3px;
 }
 .pods-corners.top::after {
-    top: -3px;
-    right: -3px;
-    border-width: 3px 3px 0 0;
+  top: -3px;
+  right: -3px;
+  border-width: 3px 3px 0 0;
 }
 
 /* Bottom corners */
 .pods-corners.bottom::before {
-    bottom: -3px;
-    left: -3px;
-    border-width: 0 0 3px 3px;
+  bottom: -3px;
+  left: -3px;
+  border-width: 0 0 3px 3px;
 }
 .pods-corners.bottom::after {
-    bottom: -3px;
-    right: -3px;
-    border-width: 0 3px 3px 0;
+  bottom: -3px;
+  right: -3px;
+  border-width: 0 3px 3px 0;
 }
 
 /* The pulse animation for the reticle */
 @keyframes reticle-pulse {
-    0% {
-        box-shadow: 0 0 5px #ff990050, inset 0 0 5px #ff990050;
-        border-color: rgba(255, 41, 237, 0.644);
-    }
-    50% {
-        box-shadow: 0 0 20px #ff2a00a0, inset 0 0 8px #ff3700a0;
-        border-color: rgba(255, 41, 144, 0.644);
-    }
-    100% {
-        box-shadow: 0 0 5px #ff6a0050, inset 0 0 5px #ff5e0050;
-        border-color: rgba(255, 41, 237, 0.644);
-    }
+  0% {
+    box-shadow: 0 0 5px #ff990050, inset 0 0 5px #ff990050;
+    border-color: rgba(255, 41, 237, 0.644);
+  }
+  50% {
+    box-shadow: 0 0 20px #ff2a00a0, inset 0 0 8px #ff3700a0;
+    border-color: rgba(255, 41, 144, 0.644);
+  }
+  100% {
+    box-shadow: 0 0 5px #ff6a0050, inset 0 0 5px #ff5e0050;
+    border-color: rgba(255, 41, 237, 0.644);
+  }
 }
 
 .pods-grid {
-    display: flex;
-    flex-direction: column;
-    flex: 1;         
-    min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 100%;
 }
 
 .pods-grid-wrapper {
-    height: calc(4 * 2.2rem + 1rem); /* Height for 4 pods + some padding */
-    overflow-y: auto;
-    overflow-x: hidden;
-    flex-shrink: 0; /* Prevents the wrapper from shrinking */
-    border: rgba(255, 110, 97, 0.721) 3px groove;
-    animation: reticle-pulse 4s linear infinite;
-    z-index: 2;
-    margin-top: -1.65rem;
+  height: calc(4 * 2.2rem + 1rem); /* Height for 4 pods + some padding */
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex-shrink: 0; /* Prevents the wrapper from shrinking */
+  border: rgba(255, 110, 97, 0.721) 3px groove;
+  animation: reticle-pulse 4s linear infinite;
+  z-index: 2;
+  margin-top: -1.65rem;
 }
 
 .pod-item {
-    padding: 0;
-    margin: 1px; 
-    background: transparent;
-    border: 3px double rgb(196, 196, 196);
-    border-radius: 4px;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    transition: all 0.2s;
-    font-weight: 800;
-    font-size: 0.8rem;
-    position: relative; /* Important for positioning the liquid */
-    height: 2.2rem;
-    overflow: hidden;
+  padding: 0;
+  margin: 1px;
+  background: transparent;
+  border: 3px double rgb(196, 196, 196);
+  border-radius: 4px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  transition: all 0.2s;
+  font-weight: 800;
+  font-size: 0.8rem;
+  position: relative; /* Important for positioning the liquid */
+  height: 2.2rem;
+  overflow: hidden;
 }
 
 .pod-item:hover {
-    background: #cccccc;
-    transform: translateX(2px);
+  background: #cccccc;
+  transform: translateX(2px);
 }
 
 .pod-item.terminating {
-    opacity: 0.9;
+  opacity: 0.9;
 }
 
 .pod-info {
-    position: relative;
-    z-index: 2; /* Sits on top of the liquid */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    padding: 0.3rem;
+  position: relative;
+  z-index: 2; /* Sits on top of the liquid */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0.3rem;
 }
 
 .pod-name {
-    font-weight: 500;
-    color: #071005ae;
+  font-weight: 500;
+  color: #071005ae;
 }
 
 .pod-status {
-    font-family: "Asimovian", sans-serif;
-    font-weight: 800;
-    font-style: normal;
-    font-size: 0.7rem;
-    margin-left: 1rem;
+  font-family: 'Asimovian', sans-serif;
+  font-weight: 800;
+  font-style: normal;
+  font-size: 0.7rem;
+  margin-left: 1rem;
 }
 
 .pod-status,
 .pod-status.running {
-    color: #005500;
+  color: #005500;
 }
 
 .pod-status.pending {
-    color: #2090ff; 
+  color: #2090ff;
 }
 
 .pod-status.terminating {
-    color: #aa0000; 
+  color: #aa0000;
 }
 
 .empty-state {
-    text-align: center;
-    color: #9ca3af;
-    padding: 2rem;
-    font-style: italic;
+  text-align: center;
+  color: #9ca3af;
+  padding: 2rem;
+  font-style: italic;
 }
 
 .pod-liquid {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-    animation: pulsate 10s linear infinite; 
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  animation: pulsate 10s linear infinite;
 }
 
 @keyframes pulsate {
-    0% {
-        transform: scaleX(1);
-        background: linear-gradient(90deg, #23f61ce3, #beffae);
-    }
-    100% {
-        transform: scaleX(1.06);
-        background: linear-gradient(90deg, #2af824e3, #91ff78);
-    }
+  0% {
+    transform: scaleX(1);
+    background: linear-gradient(90deg, #23f61ce3, #beffae);
+  }
+  100% {
+    transform: scaleX(1.06);
+    background: linear-gradient(90deg, #2af824e3, #91ff78);
+  }
 }
 
 .pod-item.pending .pod-liquid {
-    animation: pending 3s linear infinite; 
+  animation: pending 3s linear infinite;
 }
 
 @keyframes pending {
-    0% {
-        width: 0%;
-        transform: scaleX(1);
-        background: linear-gradient(90deg, #1c8df6e3, #25ace6cd);
-    }
-    100% {
-        width: 100%;
-        transform: scaleX(1);
-        background: linear-gradient(90deg, #0971d2e3, #53c5f6cd);
-    }
+  0% {
+    width: 0%;
+    transform: scaleX(1);
+    background: linear-gradient(90deg, #1c8df6e3, #25ace6cd);
+  }
+  100% {
+    width: 100%;
+    transform: scaleX(1);
+    background: linear-gradient(90deg, #0971d2e3, #53c5f6cd);
+  }
 }
 
 .pod-item.terminating .pod-liquid {
-    animation: drain 1s linear forwards;
+  animation: drain 1s linear forwards;
 }
 
 @keyframes drain {
-    0% {
-        width: 100%;
-        background: #ffdd00;
-    }
-    50% {
-        width: 50%;
-        background: #ff6a00; 
-    }
-    100% {
-        width: 0%;
-        background: #ff00008c;
-    }
+  0% {
+    width: 100%;
+    background: #ffdd00;
+  }
+  50% {
+    width: 50%;
+    background: #ff6a00;
+  }
+  100% {
+    width: 0%;
+    background: #ff00008c;
+  }
 }
 
 .kill-button-container {
-    flex-shrink: 0;
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
+  flex-shrink: 0;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
 }
 
 /* Activity Log */
 .log-entries {
-    overflow-y: auto;
-    padding-right: 0.2rem;
-    flex: 1;
-    padding-bottom: 0.2rem;
+  overflow-y: auto;
+  padding-right: 0.2rem;
+  flex: 1;
+  padding-bottom: 0.2rem;
 }
 
 .log-entry {
-    padding: 0.3rem;
-    margin-bottom: 0.5rem;
-    background: transparent;
-    border-left: 3px solid #667eea;
-    border-radius: 4px;
-    transition: all 0.2s;
+  padding: 0.3rem;
+  margin-bottom: 0.5rem;
+  background: transparent;
+  border-left: 3px solid #667eea;
+  border-radius: 4px;
+  transition: all 0.2s;
 }
 
 .log-entry:hover {
-    background: #4a6cb0;
-    transform: translateX(2px);
+  background: #4a6cb0;
+  transform: translateX(2px);
 }
 
 .log-entry.kill {
-    border-left-color: #ef4444;
+  border-left-color: #ef4444;
 }
 
 .log-entry.success {
-    border-left-color: #10b981;
+  border-left-color: #10b981;
 }
 
 .log-entry.info {
-    border-left-color: #3b82f6;
+  border-left-color: #3b82f6;
 }
 
 .log-entry.error {
-    border-left-color: #f59e0b;
+  border-left-color: #f59e0b;
 }
 
 .log-time {
-    font-size: 0.75rem;
-    color: #6b7280;
-    font-family: monospace;
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-family: monospace;
 }
 
 .log-message {
-    margin-top: 0.25rem;
-    color: #ababab;
+  margin-top: 0.25rem;
+  color: #ababab;
 }
 
 .chart-container {
-    position: relative;
-    flex: 1;
-    min-height: 0;
-    max-height: 85%;
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  max-height: 85%;
 }
 
 /* Loading spinner */
 .spinner {
-    display: flex;
-    justify-self: center;
-    width: 16px;
-    height: 16px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-top-color: white;
-    border-radius: 45%;
-    animation: spin 0.8s linear infinite;
-    margin-right: 0.5rem;
+  display: flex;
+  justify-self: center;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 45%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 0.5rem;
 }
 
 @keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-    .dashboard {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto auto 1fr;
-    }
-    
-    .left-column {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        height: 100%;
-    }
+  .dashboard {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr;
+  }
+
+  .left-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    height: 100%;
+  }
 }
