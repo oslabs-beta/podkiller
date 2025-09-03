@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cpu-spike
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cpu-spike
+  template:
+    metadata:
+      labels:
+        app: cpu-spike
+    spec:
+      containers:
+        - name: cpu-spike
+          image: cpu-spike:latest
+          command: ["node", "cpu-spike.js"]
+          ports:
+            - containerPort: 3003
+          resources:
+            requests:
+              cpu: "0.1"
+            limits:
+              cpu: "2"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cpu-spike
+spec:
+  selector:
+    app: cpu-spike
+  ports:
+    - protocol: TCP
+      port: 3003
+      targetPort: 3003
