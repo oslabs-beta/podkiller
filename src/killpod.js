@@ -12,24 +12,66 @@ kc.loadFromDefault();
 // 3. Create API client
 const k8sApi = kc.makeApiClient(k8s.CoreV1Api);
 
-// 4. FUNCTIONALITY TO DELETE A RANDOM POD
-//add a conditional variable (if no argument, labelSelector defaults to null)
 
-async function killPod(labelSelector = null) {
-  console.log('The Label Selector is:', labelSelector);
-  //namespace is the folder that holds the pods
-  const namespace = 'default';
-
+// 8/13 DJ - function to get all namespaces
+async function getAvailableNamespaces() {
   try {
+    const res = await k8sApi.listNamespace();
+    return res.items
+      .map(ns => ns.metadata.name)
+      .filter(name => name !== 'kube-system' && name !== 'kube-public' && name !== 'kube-node-lease');
+  } catch (error) {
+    console.error('Error getting namespaces:', error.message);
+    return ['default'];
+  }
+}
+
+// 4. FUNCTIONALITY TO DELETE A POD
+
+// Add a conditional variable (if no argument, all fields default to null)
+async function killPod(labelSelector = null, namespace = null, specificPodName = null) {
+  console.log('The Label Selector is:', labelSelector);
+  
+  // namespace is the folder that holds the pods
+  let targetNamespace;
+    if (namespace) {
+      targetNamespace = namespace;
+      console.log(chalk.underline.blue('Using specified namespace:') + ' ' + chalk.bold.underline(targetNamespace));
+    } else {
+      // Auto-detect and use first available namespace with pods
+      const availableNamespaces = await getAvailableNamespaces();
+      console.log(chalk.cyan('Available namespaces:'), availableNamespaces.join(', '));
+      
+      // Find first namespace that has pods
+      for (const ns of availableNamespaces) {
+        const res = await k8sApi.listNamespacedPod({ 
+          namespace: ns,
+          ...(labelSelector ? { labelSelector } : {}), 
+        });
+        if (res.items.length > 0) {
+          targetNamespace = ns;
+          break;
+        }
+      }
+      
+      if (!targetNamespace) {
+        console.log(chalk.red('No pods found in any accessible namespace.'));
+        return { success: false, error: 'No pods found' };
+      }
+      
+      console.log(chalk.underline.blue('Auto-selected namespace:') + ' ' + chalk.bold.underline(targetNamespace));
+    }
+
+    try {
     // Get a list of the pods in the namespace
     const res = await k8sApi.listNamespacedPod({ 
-      namespace,
+      namespace: targetNamespace,
       ...(labelSelector ? { labelSelector } : {}), 
     });
 
-    console.log(chalk.underline.blue('Namespace Title:') + ' ' + chalk.bold.underline(namespace));
+    console.log(chalk.underline.blue('Namespace Title:') + ' ' + chalk.bold.underline(targetNamespace));
 
-    if (!namespace) return 'Namespace is required';
+    if (!targetNamespace) return 'Namespace is required';
 
     // Assign it to var
     const pods = res.items;
@@ -44,15 +86,28 @@ async function killPod(labelSelector = null) {
     // 7/31 DJ - Store the original pod names to identify new ones later
     const originalPodNames = pods.map(p => p.metadata.name);
 
-    // Pick a random pod
-    const randomIndex = Math.floor(Math.random() * numberOfPods);
-    console.log('Random Index:', randomIndex);
-    const pod = pods[randomIndex];
-    const podName = pod.metadata.name;
+    // 8/13 DJ - Pick a random pod, if a specific pod is NOT designated
+    let pod, podName;
+    if (specificPodName) {
+      // Find the specific pod
+      pod = pods.find(p => p.metadata.name === specificPodName);
+      if (!pod) {
+        console.log(chalk.red(`Pod ${specificPodName} not found in namespace ${targetNamespace}`));
+        return { success: false, error: 'Pod not found' };
+      }
+      podName = specificPodName;
+      console.log('Selected Pod:', podName);
+    } else {
+      // Pick a random pod
+      const randomIndex = Math.floor(Math.random() * numberOfPods);
+      console.log('Random Index:', randomIndex);
+      pod = pods[randomIndex];
+      podName = pod.metadata.name;
+    }
 
     console.log(chalk.underline.red('Killing Pod:') + ' ' + chalk.bold.underline(podName));
 
-    await k8sApi.deleteNamespacedPod({ name: podName, namespace: namespace });
+    await k8sApi.deleteNamespacedPod({ name: podName, namespace: targetNamespace });
 
     const podsNew = res.items;
     let newPodNumber = podsNew.length;
@@ -66,7 +121,7 @@ async function killPod(labelSelector = null) {
     // 7/31 DJ - Wait a moment for Kubernetes to start creating replacement
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    const res2 = await k8sApi.listNamespacedPod({ namespace });
+    const res2 = await k8sApi.listNamespacedPod({ namespace: targetNamespace });
     const pods2 = res2.items;
 
     // 7/31 DJ - Find the new pod (one that wasn't in original list)
@@ -78,11 +133,11 @@ async function killPod(labelSelector = null) {
     if (newPod) {
       console.log(chalk.underline.green('New Replacement Pod:') + ' ' + chalk.bold.underline(newPod.metadata.name));
       // 8/6 DJ - Added recoveryTime variable so backend would communicate value to frontend
-      const recoveryTime = await measureRecovery(newPod.metadata.name, killedNodeDeletionTime, namespace, labelSelector);
+      const recoveryTime = await measureRecovery(newPod.metadata.name, killedNodeDeletionTime, targetNamespace, labelSelector);
         // Sandar's report variable
         const report = {
           killedPodName: podName,
-          namespace,
+          namespace: targetNamespace,
           deletionTime: killedNodeDeletionTime,
           recoveryPodName: newPod ? newPod.metadata.name : null,
           recoveryTime: recoveryTime
@@ -151,7 +206,8 @@ async function measureRecovery(podName, deletionTime, namespace, labelSelector =
 // Check if this file is being run directly (not imported)
 if (import.meta.url === `file://${process.argv[1]}`) {
   const labelSelector = process.argv[2] || null;
-  killPod(labelSelector);
+  const namespace = process.argv[3] || null;
+  killPod(labelSelector, namespace);
 }
 
 // Sandar's saveReportToDashboard function
@@ -165,4 +221,4 @@ async function saveReportToDashboard(report) {
   }
 }
 
-export {killPod};
+export {killPod, getAvailableNamespaces};

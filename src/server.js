@@ -32,12 +32,47 @@ app.post('/api/minikube/start', (req, res) => {
     });
 });
 
-// Get pods
+// 8/13 DJ - Get all namespaces
+app.get('/api/namespaces', async (req, res) => {
+    try {
+        const result = await k8sApi.listNamespace();
+        const namespaces = result.items.map(ns => ({
+            name: ns.metadata.name,
+            status: ns.status.phase,
+            creationTimestamp: ns.metadata.creationTimestamp
+        }));
+        res.json({ namespaces });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 8/13 DJ - Get pods from all namespaces
 app.get('/api/pods/:namespace', async (req, res) => {
     try {
-        const result = await k8sApi.listNamespacedPod({ 
-            namespace: req.params.namespace 
-        });
+        let result;
+        if (req.params.namespace === 'all') {
+            // Get pods from all namespaces
+            const allNamespaces = await k8sApi.listNamespace();
+            const allPods = [];
+            
+            for (const ns of allNamespaces.items) {
+                try {
+                    const nsResult = await k8sApi.listNamespacedPod({ 
+                        namespace: ns.metadata.name 
+                    });
+                    allPods.push(...nsResult.items);
+                } catch (error) {
+                    console.log(`Could not access namespace ${ns.metadata.name}`);
+                }
+            }
+            result = { items: allPods };
+        } else {
+            result = await k8sApi.listNamespacedPod({ 
+                namespace: req.params.namespace 
+            });
+        }
+
         const pods = result.items.map(pod => ({
             name: pod.metadata.name,
             status: pod.metadata.deletionTimestamp ? 'Terminating' : pod.status.phase,
@@ -49,10 +84,11 @@ app.get('/api/pods/:namespace', async (req, res) => {
     }
 });
 
-// Kill pod
+// 8/13 DJ - Kill pod (accepts namespace entry)
 app.post('/api/kill', async (req, res) => {
     try {
-        const result = await killPod();
+        const { namespace, labelSelector } = req.body;
+        const result = await killPod(labelSelector, namespace);
         if (result.success) {
             res.json(result);
         } else {

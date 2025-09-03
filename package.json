@@ -8,10 +8,10 @@
     "podkiller": "./bin/commander.js"
   },
   "scripts": {
-    "start": "NODE_NO_WARNINGS=1 node bin/commander.js",
-    "dev": "nodemon bin/commander.js",
-    "dashboard": "nodemon --watch src/server.js --ignore reports/ src/server.js & xdg-open http://localhost:3000",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "minikube start && npm run commander",
+    "stop": "minikube stop",
+    "commander": "NODE_NO_WARNINGS=1 node bin/commander.js",
+    "dashboard": "nodemon --watch src/server.js --ignore reports/ src/server.js & xdg-open http://localhost:3000"
   },
   "keywords": [
     "chaos",
@@ -27,6 +27,7 @@
     "chalk": "^5.4.1",
     "commander": "^14.0.0",
     "express": "^5.1.0",
+    "inquirer": "^12.9.2",
     "ws": "^8.18.3"
   },
   "devDependencies": {
