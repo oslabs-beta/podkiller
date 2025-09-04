@@ -22,25 +22,18 @@ async function killPod(labelSelector = null) {
 
   try {
     // Get a list of the pods in the namespace
-    const res = await k8sApi.listNamespacedPod({
+    const res = await k8sApi.listNamespacedPod({ 
       namespace,
-      ...(labelSelector ? { labelSelector } : {}),
+      ...(labelSelector ? { labelSelector } : {}), 
     });
 
-    console.log(
-      chalk.underline.blue('Namespace Title:') +
-        ' ' +
-        chalk.bold.underline(namespace)
-    );
+    console.log(chalk.underline.blue('Namespace Title:') + ' ' + chalk.bold.underline(namespace));
 
     if (!namespace) return 'Namespace is required';
 
     // Assign it to var
     const pods = res.items;
-    console.log(
-      chalk.italic.cyan('     Original Pods List: '),
-      pods.map((p) => p.metadata.name).join(' /// ')
-    );
+    console.log(chalk.italic.cyan('     Original Pods List: '), pods.map(p => p.metadata.name).join(' /// '));
     let numberOfPods = pods.length;
 
     if (numberOfPods === 0) {
@@ -49,7 +42,7 @@ async function killPod(labelSelector = null) {
     }
 
     // 7/31 DJ - Store the original pod names to identify new ones later
-    const originalPodNames = pods.map((p) => p.metadata.name);
+    const originalPodNames = pods.map(p => p.metadata.name);
 
     // Pick a random pod
     const randomIndex = Math.floor(Math.random() * numberOfPods);
@@ -57,9 +50,7 @@ async function killPod(labelSelector = null) {
     const pod = pods[randomIndex];
     const podName = pod.metadata.name;
 
-    console.log(
-      chalk.underline.red('Killing Pod:') + ' ' + chalk.bold.underline(podName)
-    );
+    console.log(chalk.underline.red('Killing Pod:') + ' ' + chalk.bold.underline(podName));
 
     await k8sApi.deleteNamespacedPod({ name: podName, namespace: namespace });
 
@@ -70,52 +61,41 @@ async function killPod(labelSelector = null) {
     const killedNodeDeletionTime = new Date().toISOString();
 
     console.log(chalk.magenta.italic('     Killed Pod: ') + podName);
-    console.log(
-      chalk.magenta.italic('     Deletion Stamp: ') + killedNodeDeletionTime
-    );
+    console.log(chalk.magenta.italic('     Deletion Stamp: ') + killedNodeDeletionTime);
 
     // 7/31 DJ - Wait a moment for Kubernetes to start creating replacement
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     const res2 = await k8sApi.listNamespacedPod({ namespace });
     const pods2 = res2.items;
 
     // 7/31 DJ - Find the new pod (one that wasn't in original list)
-    const newPod = pods2.find(
-      (pod) =>
-        !originalPodNames.includes(pod.metadata.name) &&
-        pod.metadata.name !== podName
+    const newPod = pods2.find(pod => 
+      !originalPodNames.includes(pod.metadata.name) && 
+      pod.metadata.name !== podName
     );
 
     if (newPod) {
-      console.log(
-        chalk.underline.green('New Replacement Pod:') +
-          ' ' +
-          chalk.bold.underline(newPod.metadata.name)
-      );
+      console.log(chalk.underline.green('New Replacement Pod:') + ' ' + chalk.bold.underline(newPod.metadata.name));
       // 8/6 DJ - Added recoveryTime variable so backend would communicate value to frontend
-      const recoveryTime = await measureRecovery(
-        newPod.metadata.name,
-        killedNodeDeletionTime,
-        namespace,
-        labelSelector
-      );
-      // Sandar's report variable
-      const report = {
-        killedPodName: podName,
-        namespace,
-        deletionTime: killedNodeDeletionTime,
-        recoveryPodName: newPod ? newPod.metadata.name : null,
-        recoveryTime: recoveryTime,
-      };
+      const recoveryTime = await measureRecovery(newPod.metadata.name, killedNodeDeletionTime, namespace, labelSelector);
+        // Sandar's report variable
+        const report = {
+          killedPodName: podName,
+          namespace,
+          deletionTime: killedNodeDeletionTime,
+          recoveryPodName: newPod ? newPod.metadata.name : null,
+          recoveryTime: recoveryTime
+        };
 
-      // Sandar's dashboard saving function
-      await saveReportToDashboard(report);
+        // Sandar's dashboard saving function
+        await saveReportToDashboard(report);
       return { success: true, recoveryTime: recoveryTime };
     } else {
       console.log('No new replacement pod found yet');
       return { success: true, recoveryTime: null };
     }
+
   } catch (error) {
     console.error('Error during pod deletion:', error.body || error);
     return { success: false, error: error.message };
@@ -123,30 +103,23 @@ async function killPod(labelSelector = null) {
 }
 
 // Sandar's measureRecovery function
-async function measureRecovery(
-  podName,
-  deletionTime,
-  namespace,
-  labelSelector = null
-) {
-  console.log(
-    chalk.italic.grey('     Measuring Ready Time for:'),
-    podName,
-    '...'
-  );
+async function measureRecovery(podName, deletionTime, namespace, labelSelector = null) {
+  console.log(chalk.italic.grey('     Measuring Ready Time for:'), podName,'...');
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   // 7/31 DJ - added some flags for the while loop
   let attempts = 0;
-
+  
   // Get updated list and filter out terminating pods
   const res = await k8sApi.listNamespacedPod({ namespace });
   const pods = res.items;
-
-  const alivePods = pods.filter((pod) => !pod.metadata.deletionTimestamp);
+  
+  const alivePods = pods.filter(
+    (pod) => !pod.metadata.deletionTimestamp
+  );
 
   const recoveryPod = alivePods.filter((pod) => pod.status.phase === 'Pending');
-
+  
   if (recoveryPod.length === 0) {
     console.log('No pending pods found');
     return null;
@@ -154,11 +127,7 @@ async function measureRecovery(
 
   // Monitor until pod is ready
   while (recoveryPod[0].status.phase === 'Pending') {
-    console.log(
-      `     ⏳ Reading Status: ${chalk.underline.italic.yellow(
-        recoveryPod[0].status?.phase || 'Unknown'
-      )} (attempt ${attempts + 1})`
-    );
+    console.log(`     ⏳ Reading Status: ${chalk.underline.italic.yellow(recoveryPod[0].status?.phase || 'Unknown')} (attempt ${attempts + 1})`);
     await sleep(1000);
     const res = await k8sApi.listNamespacedPod({ namespace });
     const pods = res.items;
@@ -171,17 +140,10 @@ async function measureRecovery(
 
   const newPodReadyTime = new Date();
   const recoveryTime = (newPodReadyTime - new Date(deletionTime)) / 1000;
-
-  console.log(
-    `     ✅ Pod ${podName} is ${chalk.bold.italic.underline.green('Ready')}!`
-  );
-  console.log(
-    `     ✅ Recovery Time: ${chalk.bold.italic.underline.green(
-      recoveryTime.toFixed(2),
-      'seconds'
-    )}`
-  );
-
+  
+  console.log(`     ✅ Pod ${podName} is ${chalk.bold.italic.underline.green('Ready')}!`);
+  console.log(`     ✅ Recovery Time: ${chalk.bold.italic.underline.green(recoveryTime.toFixed(2), 'seconds')}`);
+  
   return recoveryTime;
 }
 
@@ -196,16 +158,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 async function saveReportToDashboard(report) {
   try {
     const axios = await import('axios');
-    const respond = await axios.default.post(
-      'http://localhost:3000/api/reports',
-      report
-    );
-    console.log(
-      `Report sent to dashboard: ${respond.data.filename || 'success'}`
-    );
+    const respond = await axios.default.post('http://localhost:3000/api/reports', report);
+    console.log(`Report sent to dashboard: ${respond.data.filename || 'success'}`);
   } catch (error) {
     console.error('Failed to send report to dashboard:', error.message);
   }
 }
 
-export { killPod };
+export {killPod};
