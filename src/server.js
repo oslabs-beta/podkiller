@@ -48,10 +48,12 @@ app.get('/api/namespaces', async (req, res) => {
 });
 
 // 8/13 DJ - Get pods from all namespaces
-app.get('/api/pods/:namespace', async (req, res) => {
+app.get('/api/pods', async (req, res) => {
     try {
+        const namespace = req.query.namespace || 'default'; // Get from query parameter
+        
         let result;
-        if (req.params.namespace === 'all') {
+        if (namespace === 'all') {
             // Get pods from all namespaces
             const allNamespaces = await k8sApi.listNamespace();
             const allPods = [];
@@ -69,7 +71,7 @@ app.get('/api/pods/:namespace', async (req, res) => {
             result = { items: allPods };
         } else {
             result = await k8sApi.listNamespacedPod({ 
-                namespace: req.params.namespace 
+                namespace: namespace 
             });
         }
 
@@ -90,7 +92,12 @@ app.post('/api/kill', async (req, res) => {
         const { namespace, labelSelector } = req.body;
         const result = await killPod(labelSelector, namespace);
         if (result.success) {
-            res.json(result);
+            res.json({
+                success: result.success,
+                recoveryTime: result.recoveryTime,
+                killedPodName: result.killedPodName,
+                replacementPodName: result.replacementPodName
+            });
         } else {
             res.status(500).json({ error: result.error });
         }

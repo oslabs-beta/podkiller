@@ -134,28 +134,40 @@ async function killPod(labelSelector = null, namespace = null, specificPodName =
       console.log(chalk.underline.green('New Replacement Pod:') + ' ' + chalk.bold.underline(newPod.metadata.name));
       // 8/6 DJ - Added recoveryTime variable so backend would communicate value to frontend
       const recoveryTime = await measureRecovery(newPod.metadata.name, killedNodeDeletionTime, targetNamespace, labelSelector);
-        // Sandar's report variable
-        const report = {
-          killedPodName: podName,
-          namespace: targetNamespace,
-          deletionTime: killedNodeDeletionTime,
-          recoveryPodName: newPod ? newPod.metadata.name : null,
-          recoveryTime: recoveryTime
-        };
+        
+      // Sandar's report variable
+      const report = {
+        killedPodName: podName,
+        namespace: targetNamespace,
+        deletionTime: killedNodeDeletionTime,
+        recoveryPodName: newPod ? newPod.metadata.name : null,
+        recoveryTime: recoveryTime
+      };
 
+        // 9/4 DJ - Added Replacement Pod Information
         // Sandar's dashboard saving function
         await saveReportToDashboard(report);
-      return { success: true, recoveryTime: recoveryTime };
-    } else {
-      console.log('No new replacement pod found yet');
-      return { success: true, recoveryTime: null };
-    }
+            return { 
+                success: true, 
+                recoveryTime: recoveryTime,
+                killedPodName: podName,
+                replacementPodName: newPod.metadata.name 
+            };
+                } else {
+                console.log('No new replacement pod found yet');
+                return { 
+                    success: true, 
+                    recoveryTime: null,
+                    killedPodName: podName,
+                    replacementPodName: null 
+                };
+                }
 
-  } catch (error) {
-    console.error('Error during pod deletion:', error.body || error);
-    return { success: false, error: error.message };
-  }
-}
+                } catch (error) {
+                    console.error('Error during pod deletion:', error.body || error);
+                    return { success: false, error: error.message };
+                }
+            }
 
 // Sandar's measureRecovery function
 async function measureRecovery(podName, deletionTime, namespace, labelSelector = null) {
