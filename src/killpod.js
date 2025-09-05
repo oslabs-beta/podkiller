@@ -4,7 +4,7 @@
 
 import * as k8s from '@kubernetes/client-node';
 import chalk from 'chalk';
-import { setLatency, clearLatency } from './latency';
+import { setLatency, clearLatency } from './latency.js';
 
 // 2. LOAD CONFIGURATION
 const kc = new k8s.KubeConfig();
@@ -63,11 +63,19 @@ async function killPod(labelSelector = null) {
       chalk.underline.red('Killing Pod:') + ' ' + chalk.bold.underline(podName)
     );
 
-    //inject latency ... could be a sliding value you insert. Using 200 as a constant for now.
-    const latencyMs = 200;
+    //inject latency ... 
+    // set a min and a max and this will test under varying latency situations 
+    // ... also adds to the chaos!!
+    const minLatencyMs = 100;
+    const maxLatencyMs = 2000;
+
+    const latencyMs =
+      Math.floor(Math.random() * (maxLatencyMs - minLatencyMs + 1)) +
+      minLatencyMs;
 
     try {
       await setLatency(podName, namespace, latencyMs);
+      console.log(`Inject latency of ${latencyMs}ms into pod ${podName}`);
     } catch (err) {
       console.error(`Latency injection skipped for ${podName}:`, err);
     }

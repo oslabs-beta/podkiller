@@ -3,14 +3,14 @@ import { promisify } from 'util';
 
 const execAsync = promisify(exec);
 
-async function setLatency(podName, namespace, latencyMs) {
+export async function setLatency(podName, namespace, latencyMs) {
   try {
     const cmd = `kubectl exec -n ${namespace} ${podName} -- tc qdisc replace dev eth0 root netem delay ${latencyMs}ms`;
     await execAsync(cmd);
     console.log(`🌐 Injected ${latencyMs}ms latency into ${podName}`);
   } catch (err) {
     console.error(
-      `⚠️ Failed to inject latency into ${podName}:`,
+      `Failed to inject latency into ${podName}:`,
       err.stderr || err
     );
   }
