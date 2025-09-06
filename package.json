@@ -11,7 +11,7 @@
     "start": "minikube start && npm run db",
     "stop": "minikube stop",
     "cm": "NODE_NO_WARNINGS=1 node bin/commander.js",
-    "db": "nodemon --watch src/server.js --ignore reports/ src/server.js & xdg-open http://localhost:3000"
+    "db": "lsof -ti :3000 | xargs kill -9 2>/dev/null || true && nodemon --watch src/server.js --ignore reports/ src/server.js & xdg-open http://localhost:3000"
   },
   "keywords": [
     "chaos",

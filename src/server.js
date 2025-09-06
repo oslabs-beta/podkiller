@@ -35,7 +35,10 @@ app.post('/api/minikube/start', (req, res) => {
 // 8/13 DJ - Get all namespaces
 app.get('/api/namespaces', async (req, res) => {
     try {
+        console.log('Attempting to list namespaces...');
         const result = await k8sApi.listNamespace();
+        console.log('Successfully got namespaces:', result.items.length);
+
         const namespaces = result.items.map(ns => ({
             name: ns.metadata.name,
             status: ns.status.phase,
@@ -43,6 +46,7 @@ app.get('/api/namespaces', async (req, res) => {
         }));
         res.json({ namespaces });
     } catch (error) {
+        console.error('Error fetching namespaces:', error.message);
         res.status(500).json({ error: error.message });
     }
 });
@@ -141,6 +145,10 @@ app.post('/api/reports', async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: 'Failed to save report' });
   }
+});
+
+app.get('/api/test', (req, res) => {
+    res.json({ message: 'Test endpoint working!' });
 });
 
 app.listen(3000, () => {
