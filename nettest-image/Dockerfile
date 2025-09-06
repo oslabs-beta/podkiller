@@ -1,7 +1,9 @@
+cat <<EOF > Dockerfile
 FROM ubuntu:22.04
 
-# Install tc and basic networking tools
+# Install tc and ping
 RUN apt update && apt install -y iproute2 iputils-ping
 
-# Keep container running
+# Keep container alive
 CMD ["sleep", "infinity"]
+EOF
