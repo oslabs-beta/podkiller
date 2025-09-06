@@ -7,7 +7,7 @@ export async function startMinikube() {
     console.log('Minikube start response', data);
     return data;
   } catch (err) {
-    console.error('Error starting Minikube', data);
+    console.error('Error starting Minikube', err);
   }
 }
 
@@ -20,6 +20,6 @@ export async function stopMinikube() {
     console.log('Minikube stop response', data);
     return data;
   } catch (err) {
-    console.error('Error stopping Minikube', data);
+    console.error('Error stopping Minikube', err);
   }
 }
