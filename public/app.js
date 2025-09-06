@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-// Initialize empty chart
+// Initialize Recovery Chart
 function initializeChart() {
     const ctx = document.getElementById('chaosChart').getContext('2d');
     chart = new Chart(ctx, {
@@ -109,13 +109,13 @@ function initializeChart() {
             datasets: [{
                 label: 'Recovery Time (seconds)',
                 data: [],
-                borderColor: 'rgba(43, 147, 58, 1)',
-                backgroundColor: 'rgba(148, 239, 121, 0.1)',
+                borderColor: 'rgba(75, 194, 92, 0.52)',
+                backgroundColor: 'rgba(191, 240, 176, 0.1)',
                 fill: true,
                 tension: 0.1,
                 pointBackgroundColor: 'rgba(120, 230, 61, 1)',
-                pointBorderColor: '#fff',
-                pointHoverBackgroundColor: '#fff',
+                pointBorderColor: '#24db1dff',
+                pointHoverBackgroundColor: '#6fed42ff',
                 pointHoverBorderColor: 'rgba(159, 255, 149, 1)'
             }]
         },
@@ -127,13 +127,21 @@ function initializeChart() {
                     beginAtZero: true,
                     title: {
                         display: true,
-                        text: 'Recovery Time (seconds)'
+                        text: 'RT(seconds)',
+                        color: 'rgba(159, 255, 149, 1)'
+                    },
+                    ticks: {
+                        color: '#d3d3d3ff'
                     }
                 },
                 x: {
                     title: {
                         display: true,
-                        text: 'Time of Chaos Event'
+                        text: 'Time of Chaos Event',
+                        color: 'rgba(159, 255, 149, 1)'
+                    },
+                    ticks: {
+                        color: '#a4a4a4ff'
                     }
                 }
             },
@@ -148,7 +156,10 @@ function initializeChart() {
                 },
                 legend: {
                     display: true,
-                    position: 'top'
+                    position: 'top',
+                    labels: {
+                        color: '#cbcbcbff' // Change legend label color
+                    }
                 }
             }
         }
@@ -213,23 +224,20 @@ function setConnectionStatus(connected) {
     const statusDot = document.getElementById('statusDot');
     const statusText = document.getElementById('statusText');
     const killBtn = document.getElementById('killBtn');
-    const minikubeBtn = document.getElementById('minikubeBtn');
     
     if (connected) {
         statusDot.classList.add('connected');
-        statusText.textContent = 'Connected to Minikube';
+        statusText.textContent = 'Connected';
+        statusText.style = 'color: #a4f2b9'
         killBtn.disabled = false;
-        minikubeBtn.textContent = 'Minikube Running';
-        minikubeBtn.disabled = true;
         if (!activityLog.some(log => log.message.includes('Connected to Minikube'))) {
             addLogEntry('Connected to Minikube', 'success');
         }
     } else {
         statusDot.classList.remove('connected');
         statusText.textContent = 'Disconnected';
+        statusText.style = 'color: #f84848ff'
         killBtn.disabled = true;
-        minikubeBtn.textContent = 'Start Minikube';
-        minikubeBtn.disabled = false;
     }
 }
 
@@ -333,9 +341,6 @@ async function loadPods(namespace = 'default') {
 // 9/5 DJ - New Render pods list
 function renderPods() {
     const podsList = document.getElementById('podsList');
-    const podCount = document.getElementById('podCount');
-    
-    podCount.textContent = pods.length;
     
     if (pods.length === 0) {
         podsList.innerHTML = `<div class="pod-item">

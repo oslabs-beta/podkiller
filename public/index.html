@@ -34,21 +34,16 @@
             <div class="center-column">
                 <div class="panel control">
                     <div>
-                    <h2>Command Post</h2>
+                    <h2>Minikube Status</h2>
                     
                     <div class="status-card">
-                        <div class="status-indicator">
+                        <button class="status-indicator" onclick="startMinikube()">
                             <span class="status-dot" id="statusDot"></span>
                             <span id="statusText">Disconnected</span>
-                        </div>
-                        <div>
-                            <button class="btn-success" id="minikubeBtn" onclick="startMinikube()">
-                                Start Minikube
-                            </button>
-                        </div>
+                        </button>
                     </div>
 
-                    <div class="status-card">
+                    <div>
                         <div class="namespace-selector">
                             <label for="namespace-select">Select Namespace</label>
                         </div>
@@ -63,20 +58,12 @@
                     <div class="pods-section">
                         <div class="pods-corners top"></div>
 
-                        <div class="pods-header">
-                            <div class="pods-title">
-                                Target Selector
-                            </div>
-                            <span class="pod-count" id="podCount">0</span>
-                        </div>
-
                         <div class="pods-grid-wrapper">
                             <div class="pods-grid" id="podsList">
                             </div>
                         </div>
                         <div class="pods-corners bottom"></div>
                     </div>
-
 
                     <div class="kill-button-container">
                         <button class="btn-danger" id="killBtn" onclick="killRandomPod()" disabled style="flex-grow: 1;">
@@ -88,16 +75,14 @@
             </div>
 
             <div class="right-column">
-                <div class="panel analytics">
-                    <h2>Recovery Graph</h2>
+                <div class="panel analytics styled-panel">
                     <div class="chart-container">
+                        <h2>Recovery Graph</h2>
                         <canvas id="chaosChart"></canvas>
                     </div>
                 </div>
-                <div class="panel statistics">
-                    <div id="statistics">
+                <div class="panel statistics" id="statistics">
                         <!-- Statistics content will be populated by JS -->
-                    </div>
                 </div>
             </div>
         </div>
