@@ -47,28 +47,28 @@ function renderStatistics() {
 
     statisticsDiv.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h2 style="margin: 0;">Session Statistics</h2>
-            <button onclick="resetSessionStats()" style="background: rgba(88, 236, 204, 0.2); border: 1px solid rgba(31, 149, 94, 0.3); color: #26e9dfff; padding: 6px 12px; border-radius: 4px; font-size: 0.8em; cursor: pointer;">
-                Reset
-            </button>
+            <h2 style="margin: 0; text-align: center; width: 100%;">Session Statistics</h2>
         </div>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px;">
             <div style="text-align: center; padding: 15px; background: rgba(255, 255, 255, 0.03); border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.08);">
                 <div style="font-size: 1.8em; font-weight: bold; color: #00ff88; margin-bottom: 5px;">${sessionStats.podsKilled}</div>
-                <div style="font-size: 0.8em; color: rgba(255, 255, 255, 0.7); text-transform: uppercase;">Pods Killed</div>
+                <div style="font-family: 'Asimovian', sans-serif; font-weight: 400; font-style: normal; font-size: 0.8em; color: rgba(255, 255, 255, 0.7); text-transform: uppercase;">Pods Killed</div>
             </div>
             <div style="text-align: center; padding: 15px; background: rgba(255, 255, 255, 0.03); border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.08);">
                 <div style="font-size: 1.8em; font-weight: bold; color: #00ff88; margin-bottom: 5px;">${averageRecovery.toFixed(2)}s</div>
-                <div style="font-size: 0.8em; color: rgba(255, 255, 255, 0.7); text-transform: uppercase;">Avg Recovery</div>
+                <div style="font-family: 'Asimovian', sans-serif; font-weight: 400; font-style: normal; font-size: 0.8em; color: rgba(255, 255, 255, 0.7); text-transform: uppercase;">Avg Recovery</div>
             </div>
             <div style="text-align: center; padding: 15px; background: rgba(255, 255, 255, 0.03); border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.08);">
                 <div style="font-size: 1.8em; font-weight: bold; color: #00ff88; margin-bottom: 5px;">${sessionStats.recoveryTimes.length}</div>
-                <div style="font-size: 0.8em; color: rgba(255, 255, 255, 0.7); text-transform: uppercase;">Recoveries</div>
+                <div style="font-family: 'Asimovian', sans-serif; font-weight: 400; font-style: normal; font-size: 0.8em; color: rgba(255, 255, 255, 0.7); text-transform: uppercase;">Recoveries</div>
             </div>
             <div style="text-align: center; padding: 15px; background: rgba(255, 255, 255, 0.03); border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.08);">
                 <div style="font-size: 1.8em; font-weight: bold; color: #ef4444; margin-bottom: 5px;">${sessionStats.failedRecoveries}</div>
-                <div style="font-size: 0.8em; color: rgba(255, 255, 255, 0.7); text-transform: uppercase;">Failed</div>
+                <div style="font-family: 'Asimovian', sans-serif; font-weight: 400; font-style: normal; font-size: 0.8em; color: rgba(255, 255, 255, 0.7); text-transform: uppercase;">Failed</div>
             </div>
+            <button onclick="resetSessionStats()" style="background: rgba(88, 236, 204, 0.2); border: 1px solid rgba(31, 149, 94, 0.3); color: #26e9dfff; padding: 6px 12px; border-radius: 4px; font-size: 0.8em; cursor: pointer;">
+                Reset
+            </button>
         </div>
     `;
 }
@@ -158,7 +158,7 @@ function initializeChart() {
                     display: true,
                     position: 'top',
                     labels: {
-                        color: '#cbcbcbff' // Change legend label color
+                        color: 'rgba(159, 255, 149, 1)'
                     }
                 }
             }
@@ -228,7 +228,7 @@ function setConnectionStatus(connected) {
     if (connected) {
         statusDot.classList.add('connected');
         statusText.textContent = 'Connected';
-        statusText.style = 'color: #a4f2b9'
+        statusText.style = 'font-family: "Kode Mono", monospace; font-optical-sizing: auto; font-weight: 800; color: #a4f2b9'
         killBtn.disabled = false;
         if (!activityLog.some(log => log.message.includes('Connected to Minikube'))) {
             addLogEntry('Connected to Minikube', 'success');
@@ -236,7 +236,7 @@ function setConnectionStatus(connected) {
     } else {
         statusDot.classList.remove('connected');
         statusText.textContent = 'Disconnected';
-        statusText.style = 'color: #f84848ff'
+        statusText.style = 'font-family: "Kode Mono", monospace; font-optical-sizing: auto; font-weight: 800; color: #f84848ff'
         killBtn.disabled = true;
     }
 }
@@ -277,7 +277,6 @@ async function loadNamespaces() {
         // Add a default option
         const defaultOption = document.createElement('option');
         defaultOption.value = '';
-        defaultOption.text = 'Select a namespace...';
         namespaceSelect.appendChild(defaultOption);
 
         data.namespaces.forEach(ns => {
@@ -344,8 +343,8 @@ function renderPods() {
     
     if (pods.length === 0) {
         podsList.innerHTML = `<div class="pod-item">
-            <span class="pod-name">No pods found</span>
-            <span class="pod-status">Empty namespace</span>
+            <span class="pod-name" style="margin: 0.5rem; color: white">No pods found</span>
+            <span class="pod-status" style="margin: 0.5rem; color: white">Empty namespace</span>
         </div>`;
         return;
     }
@@ -358,10 +357,10 @@ function renderPods() {
             liquidClass = 'running';
         } else if (pod.status === 'Pending') {
             liquidClass = 'pending';
-            statusText = 'Pending...';
+            statusText = 'Pending';
         } else if (pod.status === 'Terminating') {
             liquidClass = 'terminating';
-            statusText = 'Terminating...';
+            statusText = 'Terminating';
         }
 
         return `
@@ -409,7 +408,7 @@ async function killRandomPod() {
 
         // Add a small delay to allow K8 to process the deletion
         setTimeout(() => {
-            loadPods('default');
+            loadPods(currentNamespace);
         }, 2000);
 
         if (response.ok) {
@@ -434,7 +433,7 @@ async function killRandomPod() {
             }
 
             // Reload pods again after the response to show final state
-            loadPods('default');
+            loadPods(currentNamespace);
 
         } else {
             throw new Error('Failed to kill pod');

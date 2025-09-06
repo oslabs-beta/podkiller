@@ -62,7 +62,8 @@ h2 {
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: "Share Tech", sans-serif;
+    font-weight: 600;
     background: #000;
     height: 100vh;
     padding: 1rem;
@@ -88,7 +89,7 @@ h1 {
     grid-template-columns: 1fr 1fr 1fr;
     gap: 1.5rem;
     height: calc(100vh - 6rem);
-    overflow: hidden;
+    overflow: visible;
 }
 
 .left-column {
@@ -168,15 +169,18 @@ h1 {
     max-height: 50%;
 }
 
-.pods-grid-wrapper::-webkit-scrollbar,
 .panel.analytics::-webkit-scrollbar,
 .chart-container::-webkit-scrollbar,
 .log-entries::-webkit-scrollbar,
 .pods-grid::-webkit-scrollbar {
-    width: 4px;
+    width: 3px;
 }
 
-.pods-grid-wrapper::-webkit-scrollbar,
+.pods-grid-wrapper::-webkit-scrollbar {
+    width: 5px;
+}
+
+.pods-grid-wrapper::-webkit-scrollbar-track,
 .panel.analytics::-webkit-scrollbar-track,
 .chart-container::-webkit-scrollbar-track,
 .log-entries::-webkit-scrollbar-track,
@@ -185,22 +189,21 @@ h1 {
     border-radius: 4px;
 }
 
-.pods-grid-wrapper::-webkit-scrollbar,
+.pods-grid-wrapper::-webkit-scrollbar-thumb,
 .panel.analytics::-webkit-scrollbar-thumb,
 .chart-container::-webkit-scrollbar-thumb,
 .log-entries::-webkit-scrollbar-thumb,
 .pods-grid::-webkit-scrollbar-thumb {
-    background: rgba(72, 203, 232, 0.415);
     border-radius: 4px;
-    border: 1px solid rgba(72, 232, 219, 0.8);
+    background: rgba(255, 41, 237, 0.644);
 }
 
-.pods-grid-wrapper::-webkit-scrollbar,
+.pods-grid-wrapper::-webkit-scrollbar-thumb:hover,
 .panel.analytics::-webkit-scrollbar-thumb:hover,
 .chart-container::-webkit-scrollbar-thumb:hover,
 .log-entries::-webkit-scrollbar-thumb:hover,
 .pods-grid::-webkit-scrollbar-thumb:hover {
-    background: rgba(72, 219, 232, 0.616);
+    background: rgba(177, 68, 255, 0.616);
 }
 
 .panel.statistics {
@@ -275,10 +278,7 @@ h1 {
     display: flex;
     justify-content: center;
     background: transparent;
-    padding-left: 0.5rem;
-    padding-top: 0.2rem;
     font-size: 0.85rem;
-    color: green;
 }
 
 .status-indicator {
@@ -286,7 +286,7 @@ h1 {
     background: transparent;
     align-items: center;
     gap: 0.5rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0.7rem;
     border: 3px double rgb(137, 137, 137);
     padding: 0.5rem;
     border-radius: 5px;
@@ -318,7 +318,9 @@ h1 {
     display: flex;
     justify-content: center;
     color: #0084ff; 
-    font-weight: 600;
+    font-family: "Asimovian", sans-serif;
+    font-weight: 400;
+    font-style: normal;
     font-size: 0.9rem;
     text-shadow: 0 0 5px #2a5fbb80; /* Subtle glow */
     letter-spacing: 0.5px;
@@ -330,11 +332,14 @@ h1 {
     display: flex;
     justify-self: center;
     width: 70%;
-    padding: 0.2rem;
+    padding: 0.1rem;
     background: transparent;
-    border: 1px solid #0084ff; 
-    color: #1ea6d3; 
-    font-size: 0.9rem;
+    border: 2px groove #9bcfffa2; 
+    color: #1ea6d3;
+    font-family: "Kode Mono", monospace;
+    font-optical-sizing: auto; 
+    font-weight: 300;
+    font-size: 0.8rem;
     border-radius: 4px;
     -webkit-appearance: none; /* Removes default dropdown arrow in Webkit browsers */
     -moz-appearance: none; /* Removes default dropdown arrow in Firefox */
@@ -414,7 +419,9 @@ button:disabled {
 }
 
 .btn-danger {
-    font-family: 'Nosifier', sans-serif;
+    font-family: "Asimovian", sans-serif;
+    font-weight: 400;
+    font-style: normal;
     text-shadow: 2px 2px 2px #de2e2e;
     background: linear-gradient(45deg, #ef444436, #dc2626);
     color: rgb(221, 199, 199);
@@ -445,14 +452,43 @@ button:disabled {
 /* Container for the Pods section */
 .pods-section {
     position: relative;
-    margin-top: 0.5rem;
-    padding: 1.5rem 1rem 2rem 1.5rem;
+    margin-top: 2rem;
+    padding: 1.5rem;
     background: transparent;
     border: none;
     border-radius: 0;
     min-height: 0;
     flex-direction: column;
     overflow: visible; /* let pseudo-elements show */
+}
+
+.pods-section::before,
+.pods-section::after {
+    content: '';
+    position: absolute;
+    background-color: #c14a38;
+    opacity: 0.4;
+    box-shadow: 0 0 10px #c1713890;
+    animation: reticle-pulse 4s linear infinite; 
+    z-index: 1; /* Puts the lines behind the main content */
+}
+
+/* Horizontal line */
+.pods-section::before {
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    transform: translateY(-50%); /* Centers the line vertically */
+}
+
+/* Vertical line */
+.pods-section::after {
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 2px; 
+    transform: translateX(-50%); /* Centers the line horizontally */
 }
 
 /* Position the helper divs correctly */
@@ -473,9 +509,9 @@ button:disabled {
     width: 25px;
     height: 25px;
     border-style: solid;
-    border-color: #38c172;
+    border-color: #c14a38;
     z-index: 10;
-    box-shadow: 0 0 10px #38c17290;
+    box-shadow: 0 0 10px #c1713890;
     animation: reticle-pulse 4s linear infinite;
 }
 
@@ -506,16 +542,16 @@ button:disabled {
 /* The pulse animation for the reticle */
 @keyframes reticle-pulse {
     0% {
-        box-shadow: 0 0 5px #38c17250, inset 0 0 5px #38c17250;
-        border-color: #38c172;
+        box-shadow: 0 0 5px #c18a3850, inset 0 0 5px #c18a3850;
+        border-color: #c15a38;
     }
     50% {
-        box-shadow: 0 0 20px #38c172a0, inset 0 0 15px #38c172a0;
-        border-color: #58ff8a;
+        box-shadow: 0 0 20px #c14f38a0, inset 0 0 8px #c15638a0;
+        border-color: #ff7958;
     }
     100% {
-        box-shadow: 0 0 5px #38c17250, inset 0 0 5px #38c17250;
-        border-color: #38c172;
+        box-shadow: 0 0 5px #c1713850, inset 0 0 5px #c16a3850;
+        border-color: #c16338;
     }
 }
 
@@ -527,27 +563,22 @@ button:disabled {
     flex-shrink: 0;
 }
 
-.pods-title {
-    color: #4de84f7b;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.9rem;
-}
-
 .pods-grid {
     display: flex;
     flex-direction: column;
     flex: 1;         
-    padding-right: 0.5rem;
+    min-height: 100%;
 }
 
 .pods-grid-wrapper {
     height: calc(4 * 2.2rem + 1rem); /* Height for 4 pods + some padding */
     overflow-y: auto;
-    padding-right: 0.5rem;
+    overflow-x: hidden;
     flex-shrink: 0; /* Prevents the wrapper from shrinking */
+    border: rgba(255, 110, 97, 0.721) 3px groove;
+    animation: reticle-pulse 4s linear infinite;
+    z-index: 2;
+    position: relative;
 }
 
 .pod-item {
@@ -560,14 +591,15 @@ button:disabled {
     justify-content: flex-start;
     align-items: center;
     transition: all 0.2s;
-    font-size: 0.7rem;
+    font-weight: 800;
+    font-size: 0.8rem;
     position: relative; /* Important for positioning the liquid */
     height: 2.2rem;
     overflow: hidden;
 }
 
 .pod-item:hover {
-    background: #b9e2bf;
+    background: #cccccc;
     transform: translateX(2px);
 }
 
@@ -591,21 +623,12 @@ button:disabled {
 }
 
 .pod-status {
+    font-family: "Asimovian", sans-serif;
+    font-weight: 400;
+    font-style: normal;
     font-size: 0.7rem;
     color: #60ad60;
     margin-left: 1rem;
-}
-
-.pod-count {
-    display: inline-block;
-    background: #2dff4262;
-    color: rgb(165, 236, 178);
-    padding: 0.2rem 0.4rem;
-    border: thick double rgba(0, 128, 0, 0.626);
-    border-radius: 9999px;
-    font-size: 0.8rem;
-    margin-right: 1rem;
-    animation: pulse 3s linear infinite; 
 }
 
 .empty-state {
@@ -622,7 +645,7 @@ button:disabled {
     width: 100%;
     height: 100%;
     z-index: 1;
-    animation: pulsate 5s linear infinite; /* Apply pulse animation */
+    animation: pulsate 5s linear infinite; 
 }
 
 @keyframes pulsate {
@@ -661,27 +684,73 @@ button:disabled {
 }
 
 .pod-item.pending .pod-liquid {
-    width: 0%;
-    background: transparent;
+    animation: pending 1s linear infinite; 
 }
 
-.pod-item.terminating .pod-liquid {
-    animation: drain 1.5s linear forwards;
-}
-
-/* New keyframe animation for the drain effect */
-@keyframes drain {
+@keyframes pending {
     0% {
-        width: 100%;
-        background: #10b981;
+        width: 0%;
+        transform: scaleX(1);
+        background: linear-gradient(90deg, #1c8df6e3, #25ace6cd);
+    }
+    10% {
+        width: 10%;
+        transform: scaleX(1.02);
+        background: linear-gradient(90deg, #1fd7f7e3, #26f0f7cf);
+    }
+    20% {
+        width: 20%;
+        transform: scaleX(1.06);
+        background: linear-gradient(90deg, #24e6f8e3, #30d7f82c);
+    }
+    35% {
+        width: 35%;
+        transform: scaleX(1.1);
+        background: linear-gradient(90deg, #2cf9efe3, #3ebbf92c);
     }
     50% {
         width: 50%;
-        background: #f59e0b; /* Yellow */
+        transform: scaleX(1.15);
+        background: linear-gradient(90deg, #3efff2e3, #5aceff2c);
+    }
+    65% {
+        width: 65%;
+        transform: scaleX(1.1);
+        background: linear-gradient(90deg, #2ce8f9e3, #3e89f92c);
+    }
+    80% {
+        width: 80%;
+        transform: scaleX(1.06);
+        background: linear-gradient(90deg, #24dff8e3, #d2e7e7);
+    }
+    90% {
+        width: 90%;
+        transform: scaleX(1.02);
+        background: linear-gradient(90deg, #1fc8f7e3, #2634f7);
+    }
+    100% {
+        width: 100%;
+        transform: scaleX(1);
+        background: linear-gradient(90deg, #1c8df6e3, #25ace6cd);
+    }
+}
+
+.pod-item.terminating .pod-liquid {
+    animation: drain 1s linear forwards;
+}
+
+@keyframes drain {
+    0% {
+        width: 100%;
+        background: #ffdd00;
+    }
+    50% {
+        width: 50%;
+        background: #ff6a00; 
     }
     100% {
         width: 0%;
-        background: #ef4444; /* Red */
+        background: #ff00008c;
     }
 }
 
