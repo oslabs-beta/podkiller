@@ -47,8 +47,8 @@ function renderStatistics() {
 
     statisticsDiv.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h3 style="margin: 0; color: rgba(162, 0, 127, 0.9); font-size: 1.1em;">Session Statistics</h3>
-            <button onclick="resetSessionStats()" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; padding: 6px 12px; border-radius: 4px; font-size: 0.8em; cursor: pointer;">
+            <h2 style="margin: 0;">Session Statistics</h2>
+            <button onclick="resetSessionStats()" style="background: rgba(88, 236, 204, 0.2); border: 1px solid rgba(31, 149, 94, 0.3); color: #26e9dfff; padding: 6px 12px; border-radius: 4px; font-size: 0.8em; cursor: pointer;">
                 Reset
             </button>
         </div>
@@ -109,14 +109,14 @@ function initializeChart() {
             datasets: [{
                 label: 'Recovery Time (seconds)',
                 data: [],
-                borderColor: 'rgba(255, 99, 132, 1)',
-                backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                borderColor: 'rgba(43, 147, 58, 1)',
+                backgroundColor: 'rgba(148, 239, 121, 0.1)',
                 fill: true,
                 tension: 0.1,
-                pointBackgroundColor: 'rgba(255, 99, 132, 1)',
+                pointBackgroundColor: 'rgba(120, 230, 61, 1)',
                 pointBorderColor: '#fff',
                 pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: 'rgba(255, 99, 132, 1)'
+                pointHoverBorderColor: 'rgba(159, 255, 149, 1)'
             }]
         },
         options: {
@@ -330,7 +330,7 @@ async function loadPods(namespace = 'default') {
     }
 }
 
-// Render pods list
+// 9/5 DJ - New Render pods list
 function renderPods() {
     const podsList = document.getElementById('podsList');
     const podCount = document.getElementById('podCount');
@@ -345,12 +345,30 @@ function renderPods() {
         return;
     }
     
-    podsList.innerHTML = pods.map(pod => `
-        <div class="pod-item ${pod.status === 'Terminating' ? 'terminating' : ''}">
-            <span class="pod-name">${pod.name}</span>
-            <span class="pod-status">${pod.status}</span>
+    podsList.innerHTML = pods.map(pod => {
+        let liquidClass = '';
+        let statusText = pod.status;
+        
+        if (pod.status === 'Running') {
+            liquidClass = 'running';
+        } else if (pod.status === 'Pending') {
+            liquidClass = 'pending';
+            statusText = 'Pending...';
+        } else if (pod.status === 'Terminating') {
+            liquidClass = 'terminating';
+            statusText = 'Terminating...';
+        }
+
+        return `
+        <div class="pod-item ${liquidClass}">
+            <div class="pod-liquid"></div>
+            <div class="pod-info">
+                <span class="pod-name">${pod.name}</span>
+                <span class="pod-status">${statusText}</span>
+            </div>
         </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 // Main Function = Kill Random Pod
@@ -361,13 +379,13 @@ async function killRandomPod() {
     }
 
     const btn = document.getElementById('killBtn');
-    btn.innerHTML = '<span class="spinner"></span>Killing...';
+    btn.innerHTML = '<div class="spinner"></div>Killing';
     btn.disabled = true;
 
     const runningPods = pods.filter(p => p.status === 'Running');
     if (runningPods.length === 0) {
         addLogEntry('No running pods to kill', 'error');
-        btn.innerHTML = '💀 Kill Random Pod';
+        btn.innerHTML = '<div>💀</div>Kill Pod';
         btn.disabled = false;
         return;
     }
@@ -421,7 +439,7 @@ async function killRandomPod() {
         updateSessionStats(null);
     }
 
-    btn.innerHTML = '💀 Kill Random Pod';
+    btn.innerHTML = '<div>💀</div>Kill Pod';
     btn.disabled = false;
 }
 

@@ -8,10 +8,10 @@
     "podkiller": "./bin/commander.js"
   },
   "scripts": {
-    "start": "minikube start && npm run commander",
+    "start": "minikube start && npm run db",
     "stop": "minikube stop",
-    "commander": "NODE_NO_WARNINGS=1 node bin/commander.js",
-    "dashboard": "nodemon --watch src/server.js --ignore reports/ src/server.js & xdg-open http://localhost:3000"
+    "cm": "NODE_NO_WARNINGS=1 node bin/commander.js",
+    "db": "nodemon --watch src/server.js --ignore reports/ src/server.js & xdg-open http://localhost:3000"
   },
   "keywords": [
     "chaos",

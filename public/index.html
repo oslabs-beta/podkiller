@@ -6,6 +6,8 @@
     <title>PodKiller</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nosifier&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -32,7 +34,7 @@
             <div class="center-column">
                 <div class="panel control">
                     <div>
-                    <h2>Target Selector</h2>
+                    <h2>Command Post</h2>
                     
                     <div class="status-card">
                         <div class="status-indicator">
@@ -48,7 +50,7 @@
 
                     <div class="status-card">
                         <div class="namespace-selector">
-                            <label for="namespace-select">Select Namespace:</label>
+                            <label for="namespace-select">Select Namespace</label>
                         </div>
                         <div>
                             <select id="namespace-select">
@@ -59,19 +61,27 @@
                     </div>
 
                     <div class="pods-section">
+                        <div class="pods-corners top"></div>
+
                         <div class="pods-header">
                             <div class="pods-title">
-                                <span>Active Pods</span>
+                                Target Selector
                             </div>
                             <span class="pod-count" id="podCount">0</span>
                         </div>
-                        <div class="pods-grid" id="podsList">
+
+                        <div class="pods-grid-wrapper">
+                            <div class="pods-grid" id="podsList">
+                            </div>
                         </div>
+                        <div class="pods-corners bottom"></div>
                     </div>
+
 
                     <div class="kill-button-container">
                         <button class="btn-danger" id="killBtn" onclick="killRandomPod()" disabled style="flex-grow: 1;">
-                            💀 Kill Random Pod
+                            <div>💀</div> 
+                            Kill Pod
                         </button>
                     </div>
                 </div>
@@ -86,7 +96,7 @@
                 </div>
                 <div class="panel statistics">
                     <div id="statistics">
-                        <!-- Statistics content will be populated by JavaScript -->
+                        <!-- Statistics content will be populated by JS -->
                     </div>
                 </div>
             </div>

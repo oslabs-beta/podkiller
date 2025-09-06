@@ -39,6 +39,17 @@
     transform: translate(-50%, -50%);
 }
 
+/* Styling for all headers and titles to match the sci-fi theme */
+h2 {
+    font-family: 'Orbitron', sans-serif;
+    text-transform: uppercase;
+    color: #00ff88;
+    text-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+    letter-spacing: 2px;
+    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+}
+
 /* Style for the dashboard container to sit on top of the background */
 .dashboard-container {
     position: relative;
@@ -100,12 +111,13 @@ h1 {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    overflow: hidden;
+    max-width: 90%;
+    margin-left: 2rem;
 }
 
 .panel {
     background: transparent;
-    border: double rgb(232, 72, 120) 3px;
+    border: double rgb(122, 223, 231) 3px;
     border-radius: 12px;
     padding: 0.5rem;
     overflow: visible;
@@ -114,10 +126,9 @@ h1 {
 }
 
 .panel h2 {
-    color: #b56202;
     margin-bottom: 0.5rem;
     padding-bottom: 0.5rem;
-    border-bottom: 2px solid #8c0628;
+    border-bottom: 2px solid #068c4d;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -289,6 +300,47 @@ h1 {
     }
 }
 
+/* Styling for the namespace selector container and label */
+.namespace-selector label {
+    display: flex;
+    justify-content: center;
+    color: #00ff88; 
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-shadow: 0 0 5px #00ff8880; /* Subtle glow */
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+/* Styling for the select dropdown itself */
+#namespace-select {
+    width: 100%;
+    padding: 0.5rem;
+    background: transparent;
+    border: 1px solid #38c172; 
+    color: #a4f2b9; 
+    font-size: 0.9rem;
+    border-radius: 4px;
+    -webkit-appearance: none; /* Removes default dropdown arrow in Webkit browsers */
+    -moz-appearance: none; /* Removes default dropdown arrow in Firefox */
+    appearance: none; /* Removes default dropdown arrow */
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+/* Add a hover effect to the select dropdown */
+#namespace-select:hover {
+    box-shadow: 0 0 10px #38c17270; /* Glowing effect on hover */
+}
+
+/* Style for the options within the dropdown */
+#namespace-select option {
+    background: #000;
+    color: #00ff88;
+    padding: 0.2rem;
+}
+
 button {
     padding: 0.5rem;
     border: none;
@@ -332,23 +384,134 @@ button:disabled {
     background: #059669;
 }
 
+@keyframes glitch {
+    0% {
+        text-shadow: 2px 2px #ef4444, -2px -2px #00ff88;
+        transform: skew(-5deg);
+    }
+    25% {
+        text-shadow: -2px -2px #ef4444, 2px 2px #00ff88;
+        transform: skew(5deg);
+    }
+    50% {
+        text-shadow: 2px -2px #ef4444, -2px 2px #00ff88;
+        transform: skew(-5deg);
+    }
+    75% {
+        text-shadow: -2px 2px #ef4444, 2px -2px #00ff88;
+        transform: skew(5deg);
+    }
+    100% {
+        text-shadow: 2px 2px #ef4444, -2px -2px #00ff88;
+        transform: skew(-5deg);
+    }
+}
+
 .btn-danger {
-    background: #ef4444;
-    color: white;
+    font-family: 'Nosifier', sans-serif;
+    text-shadow: 2px 2px 2px #de2e2e;
+    background: linear-gradient(45deg, #ef444436, #dc2626);
+    color: rgb(221, 199, 199);
+    font-size: 1.2rem;
+    padding: 2rem 1rem;
+    margin: 2rem;
+    border: 3px double #ef4444;
+    border-radius: 45%;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
 }
 
 .btn-danger:hover {
-    background: #dc2626;
+    box-shadow: 0 0 25px rgba(239, 68, 68, 0.8), 0 0 50px rgba(239, 68, 68, 0.4);
+    animation: glitch 0.5s infinite linear;
+    transform: none; /* Override the default hover transform */
 }
 
+.btn-danger:active {
+    animation: none;
+    transform: translateY(0);
+}
+
+/* Container for the Pods section */
 .pods-section {
+    position: relative;
+    margin-top: 0.5rem;
+    padding: 1.5rem 1rem 2rem 1.5rem;
+    background: transparent;
+    border: none;
+    border-radius: 0;
     min-height: 0;
     flex-direction: column;
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
-    border: 2px double #ad006b;
-    border-radius: 12px;
+    overflow: visible; /* let pseudo-elements show */
+}
+
+/* Position the helper divs correctly */
+.pods-corners {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none; /* don't block clicks */
+}
+
+/* Shared pseudo-element base */
+.pods-corners::before,
+.pods-corners::after {
+    content: '';
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    border-style: solid;
+    border-color: #38c172;
+    z-index: 10;
+    box-shadow: 0 0 10px #38c17290;
+    animation: reticle-pulse 4s linear infinite;
+}
+
+/* Top corners */
+.pods-corners.top::before {
+    top: -3px;
+    left: -3px;
+    border-width: 3px 0 0 3px;
+}
+.pods-corners.top::after {
+    top: -3px;
+    right: -3px;
+    border-width: 3px 3px 0 0;
+}
+
+/* Bottom corners */
+.pods-corners.bottom::before {
+    bottom: -3px;
+    left: -3px;
+    border-width: 0 0 3px 3px;
+}
+.pods-corners.bottom::after {
+    bottom: -3px;
+    right: -3px;
+    border-width: 0 3px 3px 0;
+}
+
+/* The pulse animation for the reticle */
+@keyframes reticle-pulse {
+    0% {
+        box-shadow: 0 0 5px #38c17250, inset 0 0 5px #38c17250;
+        border-color: #38c172;
     }
+    50% {
+        box-shadow: 0 0 20px #38c172a0, inset 0 0 15px #38c172a0;
+        border-color: #58ff8a;
+    }
+    100% {
+        box-shadow: 0 0 5px #38c17250, inset 0 0 5px #38c17250;
+        border-color: #38c172;
+    }
+}
 
 .pods-header {
     display: flex;
@@ -359,7 +522,7 @@ button:disabled {
 }
 
 .pods-title {
-    color: #4b5563;
+    color: #4de84f7b;
     font-weight: 600;
     display: flex;
     align-items: center;
@@ -374,45 +537,61 @@ button:disabled {
 }
 
 .pod-item {
-    padding: 0.3rem;
-    background: #acacac;
-    border-left: 3px solid #10b981;
+    padding: 0;
+    margin: 1px; 
+    background: transparent;
+    border: 3px double rgb(149, 149, 149);
     border-radius: 4px;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     transition: all 0.2s;
     font-size: 0.7rem;
+    position: relative; /* Important for positioning the liquid */
+    height: 2.2rem;
+    overflow: hidden;
 }
 
 .pod-item:hover {
-    background: #f3f4f6;
+    background: #b9e2bf;
     transform: translateX(2px);
 }
 
 .pod-item.terminating {
-    border-left-color: #ef4444;
-    opacity: 0.7;
+    opacity: 0.9;
+}
+
+.pod-info {
+    position: relative;
+    z-index: 2; /* Sits on top of the liquid */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 0.3rem;
 }
 
 .pod-name {
     font-weight: 500;
-    color: #1f2937;
+    color: #071005ae;
 }
 
 .pod-status {
     font-size: 0.7rem;
-    color: #6b7280;
+    color: #60ad60;
+    margin-left: 1rem;
 }
 
 .pod-count {
     display: inline-block;
-    background: #667eea;
-    color: white;
-    padding: 0.25rem 0.75rem;
+    background: #2dff4262;
+    color: rgb(165, 236, 178);
+    padding: 0.2rem 0.4rem;
+    border: thick double rgba(0, 128, 0, 0.626);
     border-radius: 9999px;
     font-size: 0.8rem;
     margin-right: 1rem;
+    animation: pulse 3s linear infinite; 
 }
 
 .empty-state {
@@ -422,7 +601,76 @@ button:disabled {
     font-style: italic;
 }
 
-/* Kill button container */
+.pod-liquid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    animation: pulsate 5s linear infinite; /* Apply pulse animation */
+}
+
+@keyframes pulsate {
+    0%, 100% {
+        transform: scaleX(1);
+        background: linear-gradient(90deg, #23f61ce3, #4ce6252c);
+    }
+    10% {
+        transform: scaleX(1.02);
+        background: linear-gradient(90deg, #26f71fe3, #4cf7262c);
+    }
+    20% {
+        transform: scaleX(1.06);
+        background: linear-gradient(90deg, #2af824e3, #54f8302c);
+    }
+    35% {
+        transform: scaleX(1.1);
+        background: linear-gradient(90deg, #32f92ce3, #61f93e2c);
+    }
+    50% {
+        transform: scaleX(1.15);
+        background: linear-gradient(90deg, #51ff3ee3, #7eff5a2c);
+    }
+    65% {
+        transform: scaleX(1.1);
+        background: linear-gradient(90deg, #32f92ce3, #61f93e2c);
+    }
+    80% {
+        transform: scaleX(1.06);
+        background: linear-gradient(90deg, #2af824e3, #54f8302c);
+    }
+    90% {
+        transform: scaleX(1.02);
+        background: linear-gradient(90deg, #26f71fe3, #4cf7262c);
+    }
+}
+
+.pod-item.pending .pod-liquid {
+    width: 0%;
+    background: transparent;
+}
+
+.pod-item.terminating .pod-liquid {
+    animation: drain 1.5s linear forwards;
+}
+
+/* New keyframe animation for the drain effect */
+@keyframes drain {
+    0% {
+        width: 100%;
+        background: #10b981;
+    }
+    50% {
+        width: 50%;
+        background: #f59e0b; /* Yellow */
+    }
+    100% {
+        width: 0%;
+        background: #ef4444; /* Red */
+    }
+}
+
 .kill-button-container {
     flex-shrink: 0;
     margin-top: 0.5rem;
@@ -489,12 +737,13 @@ button:disabled {
 
 /* Loading spinner */
 .spinner {
-    display: inline-block;
+    display: flex;
+    justify-self: center;
     width: 16px;
     height: 16px;
     border: 2px solid rgba(255, 255, 255, 0.3);
     border-top-color: white;
-    border-radius: 50%;
+    border-radius: 45%;
     animation: spin 0.8s linear infinite;
     margin-right: 0.5rem;
 }
