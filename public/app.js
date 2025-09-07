@@ -97,8 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderStatistics();
 });
 
-
-
 // Initialize Recovery Chart
 function initializeChart() {
     const ctx = document.getElementById('chaosChart').getContext('2d');
@@ -128,20 +126,24 @@ function initializeChart() {
                     title: {
                         display: true,
                         text: 'RT(seconds)',
-                        color: 'rgba(159, 255, 149, 1)'
+                        color: 'rgba(159, 255, 149, 1)',
+                        font: {family: 'Share Tech, sans-serif'}
                     },
                     ticks: {
-                        color: '#d3d3d3ff'
+                        color: '#d3d3d3ff',
+                        font: {family: 'Share Tech, sans-serif'}
                     }
                 },
                 x: {
                     title: {
                         display: true,
                         text: 'Time of Chaos Event',
-                        color: 'rgba(159, 255, 149, 1)'
+                        color: 'rgba(159, 255, 149, 1)',
+                        font: {family: 'Share Tech, sans-serif'}
                     },
                     ticks: {
-                        color: '#a4a4a4ff'
+                        color: '#a4a4a4ff',
+                        font: {family: 'Share Tech, sans-serif'}
                     }
                 }
             },
@@ -158,7 +160,8 @@ function initializeChart() {
                     display: true,
                     position: 'top',
                     labels: {
-                        color: 'rgba(159, 255, 149, 1)'
+                        color: 'rgba(159, 255, 149, 1)',
+                        font: {family: 'Share Tech, sans-serif'}
                     }
                 }
             }
@@ -313,7 +316,7 @@ async function loadNamespaces() {
 // Load pods list (auto-refresh)
 async function loadPods(namespace = 'default') {
 
-    console.log('Attempting to load pods for namespace:', namespace);
+    console.log('Loading pods for namespace:', namespace);
 
     if (!isConnected) {
         renderPods();
@@ -343,8 +346,8 @@ function renderPods() {
     
     if (pods.length === 0) {
         podsList.innerHTML = `<div class="pod-item">
-            <span class="pod-name" style="margin: 0.5rem; color: white">No pods found</span>
-            <span class="pod-status" style="margin: 0.5rem; color: white">Empty namespace</span>
+            <span class="pod-name" style="margin: 0.5rem; color: white">No Pods Found</span>
+            <span class="pod-status" style="margin: 0.5rem; color: white">Empty Namespace</span>
         </div>`;
         return;
     }
@@ -352,15 +355,19 @@ function renderPods() {
     podsList.innerHTML = pods.map(pod => {
         let liquidClass = '';
         let statusText = pod.status;
+        let statusClass = '';
         
         if (pod.status === 'Running') {
             liquidClass = 'running';
+            statusClass = 'running';
         } else if (pod.status === 'Pending') {
             liquidClass = 'pending';
             statusText = 'Pending';
+            statusClass = 'pending';
         } else if (pod.status === 'Terminating') {
             liquidClass = 'terminating';
             statusText = 'Terminating';
+            statusClass = 'terminating';
         }
 
         return `
@@ -368,7 +375,7 @@ function renderPods() {
             <div class="pod-liquid"></div>
             <div class="pod-info">
                 <span class="pod-name">${pod.name}</span>
-                <span class="pod-status">${statusText}</span>
+                <span class="pod-status ${statusClass}">${statusText}</span>
             </div>
         </div>
         `;
@@ -377,6 +384,8 @@ function renderPods() {
 
 // Main Function = Kill Random Pod
 async function killRandomPod() {
+    fireLasers();
+
     if (!isConnected || pods.length === 0) {
         addLogEntry('No pods available to kill', 'error');
         return;
@@ -487,9 +496,9 @@ function renderLogs() {
     `).join('');
 }
 
-// Auto-refresh pods every 5 seconds when connected
+// Auto-refresh pods every 10 seconds when connected
 setInterval(() => {
     if (isConnected) {
         loadPods(currentNamespace);
     }
-}, 5000);
+}, 10000);

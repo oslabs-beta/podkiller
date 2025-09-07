@@ -39,6 +39,120 @@
     transform: translate(-50%, -50%);
 }
 
+/* --- Laser Beams --- */
+.laser-beam {
+  position: fixed;
+  width: 56%;        
+  height: 75px;           
+  background: linear-gradient(to bottom, rgb(17, 255, 13) 0%, white 50%, rgb(16, 255, 12) 100%);
+  opacity: 1;
+  z-index: -7;
+  clip-path: polygon(0% 0%, 100% 45%, 100% 55%, 0% 100%);
+}
+
+@keyframes laser-fade {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Top-left corner → center */
+#laser-top-left {
+  top: 0;
+  left: 0;
+  transform-origin: left top;
+  transform: rotate(23deg) scaleX(0);
+}
+
+#laser-top-left.firing {
+  animation: 
+    laser-fire-top-left 0.1s ease-out forwards,
+    laser-fade 0.1s ease-out 0.1s forwards;
+}
+
+@keyframes laser-fire-top-left {
+  0% {
+    transform: rotate(23deg) scaleX(0);
+  }
+  100% {
+    transform: rotate(23deg) scaleX(1);
+  }
+}
+
+/* Top-right corner → center */
+#laser-top-right {
+  top: 0;
+  right: 0;
+  transform-origin: right top;
+  transform: rotate(-23deg) scaleX(0);
+  clip-path: polygon(0% 45%, 100% 0%, 100% 100%, 0% 55%);
+}
+
+#laser-top-right.firing {
+  animation: 
+    laser-fire-top-right 0.1s ease-out forwards,
+    laser-fade 0.1s ease-out 0.1s forwards;
+}
+
+@keyframes laser-fire-top-right {
+  0% {
+    transform: rotate(-23deg) scaleX(0);
+  }
+  100% {
+    transform: rotate(-23deg) scaleX(1);
+  }
+}
+
+/* Bottom-left corner → center */
+#laser-bottom-left {
+  bottom: 0;
+  left: 0;
+  transform-origin: left bottom;
+  transform: rotate(-23deg) scaleX(0);
+}
+
+@keyframes laser-fire-bottom-left {
+  0% {
+    transform: rotate(-23deg) scaleX(0);
+  }
+  100% {
+    transform: rotate(-23deg) scaleX(1);
+  }
+}
+
+#laser-bottom-left.firing {
+  animation: 
+    laser-fire-bottom-left 0.1s ease-out forwards,
+    laser-fade 0.1s ease-out 0.1s forwards;
+}
+
+/* Bottom-right corner → center */
+#laser-bottom-right {
+  bottom: 0;
+  right: 0;
+  transform-origin: right bottom;
+  transform: rotate(23deg) scaleX(0);
+  clip-path: polygon(0% 45%, 100% 0%, 100% 100%, 0% 55%);
+}
+
+#laser-bottom-right.firing {
+  animation: 
+    laser-fire-bottom-right 0.1s ease-out forwards,
+    laser-fade 0.1s ease-out 0.1s forwards;
+}
+
+@keyframes laser-fire-bottom-right {
+  0% {
+    transform: rotate(23deg) scaleX(0);
+  }
+  100% {
+    transform: rotate(23deg) scaleX(1);
+  }
+}
+
 /* Styling for all headers and titles to match the sci-fi theme */
 h2 {
     font-family: 'Orbitron', sans-serif;
@@ -97,6 +211,7 @@ h1 {
     flex-direction: column;
     gap: 1rem;
     overflow: hidden;
+    max-width: 90%;
 }
 
 .center-column {
@@ -142,27 +257,29 @@ h1 {
 }
 
 .panel.control {
-    border: none;
-    flex: 1 1 auto;
+    border: double rgb(122, 223, 231) 3px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
     display: flex;
+    flex-grow: 1;
     flex-direction: column;
     align-items: center;
-    justify-content: space-between;
-    min-height: 0;
+    margin-bottom: 3rem;
 }
 
 .panel.activity {
+    background: rgba(255, 255, 255, 0.03);
     flex: 1 1 50%;
     display: flex;
     flex-direction: column;
     border-radius: 12px;
     min-height: 0;
-    max-width: 90%;
 }
 
 .panel.analytics {
     flex: 1;
-    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     overflow: auto; 
     display: flex;
     flex-direction: column;
@@ -195,7 +312,7 @@ h1 {
 .log-entries::-webkit-scrollbar-thumb,
 .pods-grid::-webkit-scrollbar-thumb {
     border-radius: 4px;
-    background: rgba(255, 41, 237, 0.644);
+    background: rgba(255, 213, 0, 0.644);
 }
 
 .pods-grid-wrapper::-webkit-scrollbar-thumb:hover,
@@ -203,7 +320,7 @@ h1 {
 .chart-container::-webkit-scrollbar-thumb:hover,
 .log-entries::-webkit-scrollbar-thumb:hover,
 .pods-grid::-webkit-scrollbar-thumb:hover {
-    background: rgba(177, 68, 255, 0.616);
+    background: rgba(255, 119, 0, 0.616);
 }
 
 .panel.statistics {
@@ -331,7 +448,7 @@ h1 {
 #namespace-select {
     display: flex;
     justify-self: center;
-    width: 70%;
+    width: 150%;
     padding: 0.1rem;
     background: transparent;
     border: 2px groove #9bcfffa2; 
@@ -452,8 +569,7 @@ button:disabled {
 /* Container for the Pods section */
 .pods-section {
     position: relative;
-    margin-top: 2rem;
-    padding: 1.5rem;
+    padding: 2.2rem 1rem;
     background: transparent;
     border: none;
     border-radius: 0;
@@ -462,13 +578,14 @@ button:disabled {
     overflow: visible; /* let pseudo-elements show */
 }
 
+/* Reticle crosshairs */
 .pods-section::before,
 .pods-section::after {
     content: '';
     position: absolute;
-    background-color: #c14a38;
-    opacity: 0.4;
-    box-shadow: 0 0 10px #c1713890;
+    background-color: rgba(255, 41, 237, 0.644);
+    opacity: 0.2;
+    box-shadow: 0 0 10px rgba(255, 41, 237, 0.644);
     animation: reticle-pulse 4s linear infinite; 
     z-index: 1; /* Puts the lines behind the main content */
 }
@@ -509,7 +626,7 @@ button:disabled {
     width: 25px;
     height: 25px;
     border-style: solid;
-    border-color: #c14a38;
+    border-color: rgba(255, 41, 237, 0.644);
     z-index: 10;
     box-shadow: 0 0 10px #c1713890;
     animation: reticle-pulse 4s linear infinite;
@@ -542,25 +659,17 @@ button:disabled {
 /* The pulse animation for the reticle */
 @keyframes reticle-pulse {
     0% {
-        box-shadow: 0 0 5px #c18a3850, inset 0 0 5px #c18a3850;
-        border-color: #c15a38;
+        box-shadow: 0 0 5px #ff990050, inset 0 0 5px #ff990050;
+        border-color: rgba(255, 41, 237, 0.644);
     }
     50% {
-        box-shadow: 0 0 20px #c14f38a0, inset 0 0 8px #c15638a0;
-        border-color: #ff7958;
+        box-shadow: 0 0 20px #ff2a00a0, inset 0 0 8px #ff3700a0;
+        border-color: rgba(255, 41, 144, 0.644);
     }
     100% {
-        box-shadow: 0 0 5px #c1713850, inset 0 0 5px #c16a3850;
-        border-color: #c16338;
+        box-shadow: 0 0 5px #ff6a0050, inset 0 0 5px #ff5e0050;
+        border-color: rgba(255, 41, 237, 0.644);
     }
-}
-
-.pods-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 0.5rem;
-    flex-shrink: 0;
 }
 
 .pods-grid {
@@ -578,14 +687,14 @@ button:disabled {
     border: rgba(255, 110, 97, 0.721) 3px groove;
     animation: reticle-pulse 4s linear infinite;
     z-index: 2;
-    position: relative;
+    margin-top: -1.65rem;
 }
 
 .pod-item {
     padding: 0;
     margin: 1px; 
     background: transparent;
-    border: 3px double rgb(149, 149, 149);
+    border: 3px double rgb(196, 196, 196);
     border-radius: 4px;
     display: flex;
     justify-content: flex-start;
@@ -624,11 +733,23 @@ button:disabled {
 
 .pod-status {
     font-family: "Asimovian", sans-serif;
-    font-weight: 400;
+    font-weight: 800;
     font-style: normal;
     font-size: 0.7rem;
-    color: #60ad60;
     margin-left: 1rem;
+}
+
+.pod-status,
+.pod-status.running {
+    color: #005500;
+}
+
+.pod-status.pending {
+    color: #2090ff; 
+}
+
+.pod-status.terminating {
+    color: #aa0000; 
 }
 
 .empty-state {
@@ -645,46 +766,22 @@ button:disabled {
     width: 100%;
     height: 100%;
     z-index: 1;
-    animation: pulsate 5s linear infinite; 
+    animation: pulsate 10s linear infinite; 
 }
 
 @keyframes pulsate {
-    0%, 100% {
+    0% {
         transform: scaleX(1);
-        background: linear-gradient(90deg, #23f61ce3, #4ce6252c);
+        background: linear-gradient(90deg, #23f61ce3, #beffae);
     }
-    10% {
-        transform: scaleX(1.02);
-        background: linear-gradient(90deg, #26f71fe3, #4cf7262c);
-    }
-    20% {
+    100% {
         transform: scaleX(1.06);
-        background: linear-gradient(90deg, #2af824e3, #54f8302c);
-    }
-    35% {
-        transform: scaleX(1.1);
-        background: linear-gradient(90deg, #32f92ce3, #61f93e2c);
-    }
-    50% {
-        transform: scaleX(1.15);
-        background: linear-gradient(90deg, #51ff3ee3, #7eff5a2c);
-    }
-    65% {
-        transform: scaleX(1.1);
-        background: linear-gradient(90deg, #32f92ce3, #61f93e2c);
-    }
-    80% {
-        transform: scaleX(1.06);
-        background: linear-gradient(90deg, #2af824e3, #54f8302c);
-    }
-    90% {
-        transform: scaleX(1.02);
-        background: linear-gradient(90deg, #26f71fe3, #4cf7262c);
+        background: linear-gradient(90deg, #2af824e3, #91ff78);
     }
 }
 
 .pod-item.pending .pod-liquid {
-    animation: pending 1s linear infinite; 
+    animation: pending 3s linear infinite; 
 }
 
 @keyframes pending {
@@ -693,45 +790,10 @@ button:disabled {
         transform: scaleX(1);
         background: linear-gradient(90deg, #1c8df6e3, #25ace6cd);
     }
-    10% {
-        width: 10%;
-        transform: scaleX(1.02);
-        background: linear-gradient(90deg, #1fd7f7e3, #26f0f7cf);
-    }
-    20% {
-        width: 20%;
-        transform: scaleX(1.06);
-        background: linear-gradient(90deg, #24e6f8e3, #30d7f82c);
-    }
-    35% {
-        width: 35%;
-        transform: scaleX(1.1);
-        background: linear-gradient(90deg, #2cf9efe3, #3ebbf92c);
-    }
-    50% {
-        width: 50%;
-        transform: scaleX(1.15);
-        background: linear-gradient(90deg, #3efff2e3, #5aceff2c);
-    }
-    65% {
-        width: 65%;
-        transform: scaleX(1.1);
-        background: linear-gradient(90deg, #2ce8f9e3, #3e89f92c);
-    }
-    80% {
-        width: 80%;
-        transform: scaleX(1.06);
-        background: linear-gradient(90deg, #24dff8e3, #d2e7e7);
-    }
-    90% {
-        width: 90%;
-        transform: scaleX(1.02);
-        background: linear-gradient(90deg, #1fc8f7e3, #2634f7);
-    }
     100% {
         width: 100%;
         transform: scaleX(1);
-        background: linear-gradient(90deg, #1c8df6e3, #25ace6cd);
+        background: linear-gradient(90deg, #0971d2e3, #53c5f6cd);
     }
 }
 
@@ -814,13 +876,6 @@ button:disabled {
     flex: 1;
     min-height: 0;
     max-height: 85%;
-}
-
-.styled-panel {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 6px;
-    flex-grow: 1;
 }
 
 /* Loading spinner */

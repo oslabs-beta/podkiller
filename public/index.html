@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
         <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap" rel="stylesheet">
-        <link href="https://fonts.googleapis.com/css2?family=Asimovian&family=Cabin:ital,wght@0,400..700;1,400..700&family=Oswald:wght@200..700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Asimovian&display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Kode+Mono:wght@400..700&display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Share+Tech&display=swap" rel="stylesheet">
 </head>
@@ -24,46 +24,43 @@
     <!-- Main Dashboard Content -->
     <div class="dashboard-container">
         <div class="dashboard">
+            
             <div class="left-column">
                 <div class="panel activity">
                     <h2>Activity Log</h2>
                     <div class="log-entries" id="logEntries">
-                        <div class="empty-log">No activity yet. Kill a pod to see logs.</div>
+                        <div class="empty-log">No activity reported.</div>
                     </div>
                 </div>
             </div>
 
             <div class="center-column">
-                <div class="panel control">
-                    <div>
-                    <h2>Minikube Status</h2>
-                    
-                    <div class="status-card">
-                        <button class="status-indicator" onclick="startMinikube()">
-                            <span class="status-dot" id="statusDot"></span>
-                            <span id="statusText">Disconnected</span>
-                        </button>
-                    </div>
 
-                    <div>
-                        <div class="namespace-selector">
+                <div class="panel control">
+                        <h2>Minikube Status</h2>
+                            <div class="status-card">
+                                <button class="status-indicator" onclick="startMinikube()">
+                                    <span class="status-dot" id="statusDot"></span>
+                                    <span id="statusText">Disconnected</span>
+                                </button>
+                            </div>
+                            <div class="namespace-selector">
                             <label for="namespace-select">Select Namespace</label>
-                        </div>
-                        <div>
+                            </div>
+                            <div>
                             <select id="namespace-select">
                             <option value="" disabled selected>Loading Namespaces...</option>
                             </select>
-                        </div>
-                    </div>
-                    </div>
+                            </div>
+                    </div>       
 
                     <div class="pods-section">
                         <div class="pods-corners top"></div>
 
                         <div class="pods-grid-wrapper">
-                            <div class="pods-grid" id="podsList">
-                            </div>
+                            <div class="pods-grid" id="podsList"></div>
                         </div>
+
                         <div class="pods-corners bottom"></div>
                     </div>
 
@@ -73,11 +70,10 @@
                             Kill Pod
                         </button>
                     </div>
-                </div>
             </div>
 
             <div class="right-column">
-                <div class="panel analytics styled-panel">
+                <div class="panel analytics">
                     <div class="chart-container">
                         <h2>Recovery Graph</h2>
                         <canvas id="chaosChart"></canvas>
@@ -92,5 +88,14 @@
 
     <script src="canvas.js"></script>
     <script src="app.js"></script>
+
+    <!-- Laser Beams -->
+    <div class="laser-beam" id="laser-top-left"></div>
+    <div class="laser-beam" id="laser-top-right"></div>
+    <div class="laser-beam" id="laser-bottom-left"></div>
+    <div class="laser-beam" id="laser-bottom-right"></div>
+
+    <!-- Target at Center -->
+    <div class="target" id="target"></div>
 </body>
 </html>

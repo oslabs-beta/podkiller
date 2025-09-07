@@ -91,3 +91,24 @@ window.addEventListener('resize', () => {
     setCanvasSize();
     createStars(); // Recreate stars for new dimensions
 });
+
+// Laser firing control
+function fireLasers() {
+    const lasers = document.querySelectorAll('.laser-beam');
+    
+    lasers.forEach(laser => {
+        // Remove class to reset animation
+        laser.classList.remove('firing');
+        
+        // Force reflow to ensure the class removal takes effect
+        laser.offsetHeight;
+        
+        // Add class to start animation
+        laser.classList.add('firing');
+    });
+    
+    // Remove the class after animation completes to clean up
+    setTimeout(() => {
+        lasers.forEach(laser => laser.classList.remove('firing'));
+    }, 200); // 100ms fire + 100ms fade
+}
