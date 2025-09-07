@@ -67,7 +67,10 @@ function renderStatistics() {
                 <div style="font-family: 'Asimovian', sans-serif; font-weight: 400; font-style: normal; font-size: 0.8em; color: rgba(255, 255, 255, 0.7); text-transform: uppercase;">Failed</div>
             </div>
             <button onclick="resetSessionStats()" style="background: rgba(88, 236, 204, 0.2); border: 1px solid rgba(31, 149, 94, 0.3); color: #26e9dfff; padding: 6px 12px; border-radius: 4px; font-size: 0.8em; cursor: pointer;">
-                Reset
+                Reset Session
+            </button>
+            <button style="background: rgba(88, 236, 204, 0.2); border: 1px solid rgba(31, 149, 94, 0.3); color: #26e9dfff; padding: 6px 12px; border-radius: 4px; font-size: 0.8em; cursor: pointer;">
+                Download Report
             </button>
         </div>
     `;

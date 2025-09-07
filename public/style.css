@@ -306,21 +306,28 @@ h1 {
     border-radius: 4px;
 }
 
-.pods-grid-wrapper::-webkit-scrollbar-thumb,
 .panel.analytics::-webkit-scrollbar-thumb,
 .chart-container::-webkit-scrollbar-thumb,
 .log-entries::-webkit-scrollbar-thumb,
 .pods-grid::-webkit-scrollbar-thumb {
     border-radius: 4px;
-    background: rgba(255, 213, 0, 0.644);
+    background: rgba(245, 45, 255, 0.633);
 }
 
-.pods-grid-wrapper::-webkit-scrollbar-thumb:hover,
 .panel.analytics::-webkit-scrollbar-thumb:hover,
 .chart-container::-webkit-scrollbar-thumb:hover,
 .log-entries::-webkit-scrollbar-thumb:hover,
 .pods-grid::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 119, 0, 0.616);
+    background: rgba(119, 0, 255, 0.616);
+}
+
+.pods-grid-wrapper::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background: rgb(0, 200, 255);
+}
+
+.pods-grid-wrapper::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 128, 255, 0.616);
 }
 
 .panel.statistics {
