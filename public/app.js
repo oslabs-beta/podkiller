@@ -3,7 +3,7 @@ let isConnected = false;
 let pods = [];
 let activityLog = [];
 let chart = null;
-let currentNamespace = 'default';
+let currentNamespace = null;
 let isMinikubeOperationInProgress = false;
 
 // Current Session Stats Tracker
@@ -86,7 +86,7 @@ function resetSessionStats() {
         failedRecoveries: 0
     };
     renderStatistics();
-    addLogEntry('Session statistics reset', 'info');
+    addLogEntry('Session statistics reset', 'error');
 }
 
 // Launch App
@@ -94,6 +94,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initStarfield();
     checkConnection();
     loadNamespaces();
+    const namespaceSelect = document.getElementById('namespace-select');
+    namespaceSelect.classList.add('attention-glow');
     addLogEntry('Dashboard initialized', 'info');
     initializeChart();
     fetchReports();
@@ -274,6 +276,7 @@ function setConnectionStatus(connected) {
         // Only log connection message if state actually changed
         if (!wasConnected) {
             addLogEntry('Connected to Minikube', 'success');
+            addLogEntry('Please select a Namespace', 'error');
         }
 
     } else {
@@ -308,10 +311,34 @@ function clearNamespaces() {
 }
 
 // Function to clear pods list
-function clearPods() {
-    pods = []; // Clear the global pods array
-    renderPods(); // This will show "No Pods Found" message
-    addLogEntry('Pods list cleared', 'error');
+function clearPods(callback) {
+    const podsList = document.getElementById('podsList');
+    const podItems = podsList.querySelectorAll('.pod-item');
+    
+    // Check if there are any pods to animate
+    if (podItems.length > 0) {
+        // Animate out all the pods
+        podItems.forEach((item, index) => {
+            const delay = (podItems.length - 1 - index) * 0.05;
+            item.style.animationDelay = `${delay}s`;
+            item.classList.remove('show');
+            item.classList.add('hide');
+        });
+
+        // Set a timeout to clear the list after the animation is complete
+        const totalAnimationTime = (podItems.length * 0.05) + 0.5;
+        setTimeout(() => {
+            podsList.innerHTML = ''; // Only clear the HTML
+            if (callback) {
+                callback();
+            }
+        }, totalAnimationTime * 1000); // Convert to milliseconds
+    } else {
+        // No pods to animate, just proceed to the callback
+        if (callback) {
+            callback();
+        }
+    }
 }
 
 // Function to clear all UI state when disconnecting
@@ -414,6 +441,7 @@ async function startMinikube() {
 }
 
 async function stopMinikube() {
+
     console.log('🛑 Initiating Minikube shutdown...');
     addLogEntry('Shutting down Minikube...', 'kill');
     isMinikubeOperationInProgress = true;
@@ -476,21 +504,21 @@ async function loadNamespaces() {
         const response = await fetch('/api/namespaces');
         const data = await response.json();
         const namespaceSelect = document.getElementById('namespace-select');
+        const labelElement = document.querySelector('label[for="namespace-select"]');
         namespaceSelect.innerHTML = ''; // Clear existing options
         
         // Add a default option
         const defaultOption = document.createElement('option');
-        defaultOption.value = '';
+        defaultOption.value = 'null';
         namespaceSelect.appendChild(defaultOption);
+
+        // Add the 'attention-text' class to the label initially, since 'null' is selected by default
+        labelElement.classList.add('attention-text');
 
         data.namespaces.forEach(ns => {
             const option = document.createElement('option');
             option.value = ns.name;
             option.text = ns.name;
-            // Pre-select 'default' namespace if it exists
-            if (ns.name === 'default') {
-                option.selected = true;
-            }
             namespaceSelect.appendChild(option);
         });
 
@@ -500,11 +528,25 @@ async function loadNamespaces() {
         // Add event listener to reload pods when namespace changes
         namespaceSelect.addEventListener('change', (event) => {
             const selectedNamespace = event.target.value;
-            if (selectedNamespace) {
-                currentNamespace = selectedNamespace; // ✅ Update the global variable
-                loadPods(selectedNamespace); // ✅ Use the selected namespace
-                addLogEntry(`Switched to namespace: ${selectedNamespace}`, 'info');
-            }
+
+            // First, clear the pods with the animation
+            clearPods(() => {
+                if (selectedNamespace === 'null') {
+                    // If 'null' is selected, show the attention animation and empty message
+                    labelElement.classList.add('attention-text');
+                    namespaceSelect.classList.add('attention-glow');
+                    addLogEntry('Please select a Namespace', 'error');
+                    pods = []; // Clear the data array
+                    renderPods(); // Render the empty list message
+                } else {
+                    // If a valid namespace is selected, remove the attention animation and load new pods
+                    labelElement.classList.remove('attention-text');
+                    namespaceSelect.classList.remove('attention-glow');
+                    currentNamespace = selectedNamespace;
+                    loadPods(selectedNamespace); // This will render the new pods
+                    addLogEntry(`Switched to namespace: ${selectedNamespace}`, 'info');
+                }
+            });
         });
 
     } catch (error) {
@@ -513,7 +555,7 @@ async function loadNamespaces() {
     }
 }
 
-// Load pods list (auto-refresh)
+// Load pods list
 async function loadPods(namespace = 'default') {
 
     console.log('Loading pods for namespace:', namespace);
@@ -550,18 +592,21 @@ async function loadPods(namespace = 'default') {
 }
 
 // 9/5 DJ - New Render pods list
+// 9/8 DJ - Pods to show one by one
 function renderPods() {
     const podsList = document.getElementById('podsList');
-    
+    const killBtn = document.getElementById('killBtn');
+
     if (pods.length === 0) {
-        podsList.innerHTML = `<div class="pod-item">
+        podsList.innerHTML = `<div class="pod-item show">
             <span class="pod-name" style="margin: 0.5rem; color: white">No Pods Found</span>
             <span class="pod-status" style="margin: 0.5rem; color: white">Empty Namespace</span>
         </div>`;
+        killBtn.disabled = true;
         return;
     }
     
-    podsList.innerHTML = pods.map(pod => {
+    const podsHtml = pods.map(pod => {
         let liquidClass = '';
         let statusText = pod.status;
         let statusClass = '';
@@ -589,6 +634,17 @@ function renderPods() {
         </div>
         `;
     }).join('');
+
+    // Step 2: Set the innerHTML and get a reference to the new elements
+    podsList.innerHTML = podsHtml;
+
+    // Step 3: Add a class and a staggered delay to each item
+    const podItems = podsList.querySelectorAll('.pod-item');
+    podItems.forEach((item, index) => {
+        item.style.animationDelay = `${index * 0.05}s`;
+        item.classList.add('show');
+        killBtn.disabled = false;
+    });
 }
 
 // Main Function = Kill Random Pod

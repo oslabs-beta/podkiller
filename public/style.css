@@ -234,6 +234,21 @@ h1 {
     border-radius: 12px;
 }
 
+
+@keyframes reveal {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(20px);
+  }
+  99% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 .panel {
     background: transparent;
     border: double rgb(122, 223, 231) 3px;
@@ -274,6 +289,13 @@ h1 {
     flex-direction: column;
     border-radius: 12px;
     min-height: 0;
+    
+    /* Hides the interface initially and prepares it for animation */
+    opacity: 0;
+    transform: scale(0.5) translateY(5px);
+    /* Uses a custom property for consistent timing */
+    --animation-duration: 1s;
+    animation: reveal var(--animation-duration) forwards ease-out;
 }
 
 .panel.analytics {
@@ -479,6 +501,55 @@ h1 {
     text-align: center;
 }
 
+label[for="namespace-select"] {
+    transition: color 0.5s ease-out, text-shadow 0.5s ease-out;
+}
+
+@keyframes selector-glow {
+  0% {
+    border-color: #9bcfff;
+    box-shadow: 0 0 5px #00d5ff, 0 0 10px #00aaff;
+  }
+  50% {
+    border-color: hsl(195, 47%, 34%);
+    box-shadow: 0 0 10px #00aaff, 0 0 20px #005680;
+  }
+  100% {
+    border-color: #9bcfff;
+    box-shadow: 0 0 5px #00d5ff, 0 0 10px #00aaff;
+  }
+}
+
+#namespace-select.attention-glow {
+  animation: selector-glow 2s infinite alternate ease-in-out;
+}
+
+@keyframes blink-attention {
+  0% {
+    color: #fff;
+    text-shadow: 0 0 5px #69eeff, 0 0 10px #6980ff, 0 0 15px #69cbff;
+    transform: skew(-5deg);
+  }
+  50% {
+    color: #69b4ff;
+    text-shadow: none;
+    transform: skew(5deg);
+  }
+  100% {
+    color: #fff;
+    text-shadow: 0 0 5px #69dfff, 0 0 10px #698aff, 0 0 15px #69dfff;
+    transform: skew(-5deg);
+  }
+}
+
+.attention-text {
+  font-family: 'Arial', sans-serif;
+  font-weight: bold;
+  font-size: 2em;
+  text-align: center;
+  animation: blink-attention 1s infinite alternate;
+}
+
 /* Add a hover effect to the select dropdown */
 #namespace-select:hover {
     box-shadow: 0 0 10px #3896c170; /* Glowing effect on hover */
@@ -565,7 +636,14 @@ button:disabled {
     letter-spacing: 1px;
     position: relative;
     overflow: hidden;
-    transition: all 0.3s ease;
+}
+
+.btn-danger:reveal {
+    opacity: 1;
+    transform: none;
+    /* You can also add a subtle animation for continuous effect */
+    animation: reveal var(--animation-duration) forwards ease-out;
+    transition: opacity 1s ease-out, transform 1s ease-out;
 }
 
 .btn-danger:hover {
@@ -589,6 +667,7 @@ button:disabled {
     min-height: 0;
     flex-direction: column;
     overflow: visible; /* let pseudo-elements show */
+    transition: transform 2.5s ease-out;
 }
 
 /* Reticle crosshairs */
@@ -703,6 +782,28 @@ button:disabled {
     margin-top: -1.65rem;
 }
 
+@keyframes slide-in {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-out {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
 .pod-item {
     padding: 0;
     margin: 1px; 
@@ -718,11 +819,28 @@ button:disabled {
     position: relative; /* Important for positioning the liquid */
     height: 2.2rem;
     overflow: hidden;
+
+    /* Initially hide the items */
+    opacity: 0;
+    transform: translateY(20px);
+    /* Set a transition for a gentle reveal in case JS fails */
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
+.pod-item.show {
+  /* Apply the animation with a delay */
+  animation: slide-in 0.5s forwards;
+}
+
+.pod-item.hide {
+  /* Apply the animation with a delay */
+  animation: slide-out 0.3s backwards;
 }
 
 .pod-item:hover {
-    background: #cccccc;
+    background: #ff399c;
     transform: translateX(2px);
+    border: thick double red;
 }
 
 .pod-item.terminating {
