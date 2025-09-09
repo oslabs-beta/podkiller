@@ -294,7 +294,7 @@ h1 {
     opacity: 0;
     transform: scale(0.5) translateY(5px);
     /* Uses a custom property for consistent timing */
-    --animation-duration: 1s;
+    --animation-duration: 0.5s;
     animation: reveal var(--animation-duration) forwards ease-out;
 }
 
@@ -474,7 +474,7 @@ h1 {
     font-weight: 400;
     font-style: normal;
     font-size: 0.9rem;
-    text-shadow: 0 0 5px #2a5fbb80; /* Subtle glow */
+    text-shadow: 0 0 5px #2a5fbb80;
     letter-spacing: 0.5px;
     margin-bottom: 0.5rem;
 }
@@ -552,7 +552,7 @@ label[for="namespace-select"] {
 
 /* Add a hover effect to the select dropdown */
 #namespace-select:hover {
-    box-shadow: 0 0 10px #3896c170; /* Glowing effect on hover */
+    box-shadow: 0 0 10px #3896c170; 
 }
 
 /* Style for the options within the dropdown */
@@ -845,6 +845,11 @@ button:disabled {
 
 .pod-item.terminating {
     opacity: 0.9;
+}
+
+.pod-item.selected {
+    border: 10px double #ff0062;
+    box-shadow: 0 0 20px #ff00aa;
 }
 
 .pod-info {

@@ -148,17 +148,13 @@ app.get('/api/pods', async (req, res) => {
 });
 
 // 8/13 DJ - Kill pod (accepts namespace entry)
+// 9/9 DJ - Kill pod (accepts array of pod names)
 app.post('/api/kill', async (req, res) => {
   try {
-    const { namespace, labelSelector } = req.body;
-    const result = await killPod(labelSelector, namespace);
+    const { namespace, podNames } = req.body;
+    const result = await killPod(namespace, podNames); // Pass the array of names
     if (result.success) {
-      res.json({
-        success: result.success,
-        recoveryTime: result.recoveryTime,
-        killedPodName: result.killedPodName,
-        replacementPodName: result.replacementPodName,
-      });
+      res.json({ success: true, results: result.results });
     } else {
       res.status(500).json({ error: result.error });
     }
