@@ -3,7 +3,7 @@ let isConnected = false;
 let pods = [];
 let activityLog = [];
 let chart = null;
-let currentNamespace = '';
+let currentNamespace = 'default';
 let isMinikubeOperationInProgress = false;
 
 // Current Session Stats Tracker
@@ -93,7 +93,6 @@ function resetSessionStats() {
 document.addEventListener('DOMContentLoaded', () => {
     initStarfield();
     checkConnection();
-    setInterval(checkConnection, 60000); // Check connection every 60 seconds
     loadNamespaces();
     addLogEntry('Dashboard initialized', 'info');
     initializeChart();
@@ -220,17 +219,19 @@ async function checkConnection() {
     try {
         console.log('📡 Automatic Minikube connection check')
         const response = await fetch('/api/status');
-        if (response.ok) {
-            setConnectionStatus(true);
-            if (isConnected) {
-                console.log ('Confirmed Connection - Reloading Pods')
-                loadPods(currentNamespace); // Auto-load pods when connected
-            }
-        } else {
-            setConnectionStatus(false);
+        const data = await response.json();
+
+        // Use the 'connected' flag from the server response
+        setConnectionStatus(data.connected); 
+
+        // Load pods only if a connection is established
+        if (data.connected) {
+            console.log('✅ Confirmed Connection - Reloading Pods');
+            loadPods(currentNamespace);
         }
+
     } catch (error) {
-        console.log('Minikube is Disconnected!')
+        console.log('💥 Minikube connection check failed:', error.message);
         setConnectionStatus(false);
     }
 }
@@ -244,7 +245,10 @@ function setConnectionStatus(connected) {
     const statusText = document.getElementById('statusText');
     const killBtn = document.getElementById('killBtn');
     const minikubeBtn = document.getElementById('minikubeBtn')
+    const namespaceSelect = document.getElementById('namespace-select');
     
+    // 9/8 DJ - This will probably become obsolete soon, 
+    // but I needed a check for frontend elements that were used as flags
     if (!statusDot || !statusText || !killBtn || !minikubeBtn) {
         console.warn("⚠️ UI elements not ready yet, skipping connection status update");
         return;
@@ -252,9 +256,11 @@ function setConnectionStatus(connected) {
 
     if (connected) {
         statusDot.classList.add('connected');
+        statusDot.classList.remove('working');
         statusText.textContent = 'Connected';
         statusText.style = 'font-family: "Kode Mono", monospace; font-optical-sizing: auto; font-weight: 800; color: #a4f2b9'
         killBtn.disabled = false;
+        loadNamespaces;
 
         // Set the button to "Stop Minikube" and change its functionality
         if (!isMinikubeOperationInProgress) {
@@ -272,6 +278,7 @@ function setConnectionStatus(connected) {
 
     } else {
         statusDot.classList.remove('connected');
+        statusDot.classList.remove('working');
         statusText.textContent = 'Disconnected';
         statusText.style = 'font-family: "Kode Mono", monospace; font-optical-sizing: auto; font-weight: 800; color: #f84848ff'
         killBtn.disabled = true;
@@ -280,26 +287,90 @@ function setConnectionStatus(connected) {
         if (!isMinikubeOperationInProgress) {
         minikubeBtn.disabled = false;
         minikubeBtn.onclick = startMinikube;
-        statusDot.classList.remove('connected');
-        statusText.textContent = 'Disconnected';
         statusText.style = 'font-family: "Kode Mono", monospace; font-optical-sizing: auto; font-weight: 800; color: #f84848ff'
         }
 
         // Only log disconnection message if state actually changed
         if (wasConnected) {
-            addLogEntry('Disconnected from Minikube', 'error');
+            addLogEntry('Disconnected from Minikube', 'kill');
         }
     }
+}
+
+// Function to clear namespace list
+function clearNamespaces() {
+    const namespaceSelect = document.getElementById('namespace-select');
+    if (namespaceSelect) {
+        namespaceSelect.textContent = '---';
+        currentNamespace = 'default'; // Reset to default
+        addLogEntry('Namespace list cleared', 'error');
+    }
+}
+
+// Function to clear pods list
+function clearPods() {
+    pods = []; // Clear the global pods array
+    renderPods(); // This will show "No Pods Found" message
+    addLogEntry('Pods list cleared', 'error');
+}
+
+// Function to clear all UI state when disconnecting
+function clearAllUIState() {
+    clearNamespaces();
+    clearPods();    
+    addLogEntry('UI state cleared for disconnect', 'error');
+}
+
+// Function to initialize UI state when connecting
+function initializeUIState() {
+    addLogEntry('Initializing UI state for connection...', 'info');
+    
+    // Load namespaces first
+    loadNamespaces();
+    
+    // Refresh chart data
+    fetchReports();
+    
+    addLogEntry('UI state initialized', 'success');
+}
+
+
+async function pollForConnection(maxWaitMs) {
+    const startTime = Date.now();
+    const pollInterval = 500;
+    
+    while (Date.now() - startTime < maxWaitMs) {
+        try {
+            const response = await fetch('/api/status');
+            const data = await response.json();
+            if (data.connected) {
+                console.log('✅ Minikube is ready!');
+                setConnectionStatus(true);
+                // Initialize UI state when connection is established
+                initializeUIState();
+                return;
+            }
+        } catch (error) {
+            console.log('Still waiting for Minikube...');
+        }
+        await new Promise(resolve => setTimeout(resolve, pollInterval));
+    }
+    
+    console.log('⚠️ Minikube response timeout - forcing connection check');
+        checkConnection();
 }
 
 // 9/8 Pete - Start & Stop Minikube
 async function startMinikube() {
     console.log('Initiating Minikube...');
     isMinikubeOperationInProgress = true;
+    addLogEntry('Connecting to Minikube...', 'info');
 
     const minikubeBtn = document.getElementById('minikubeBtn');
     minikubeBtn.disabled = true;
-    minikubeBtn.innerHTML = '<div class="spinner"></div>Starting...';
+    statusDot.classList.add('working');
+    statusText.textContent = 'Connecting...';
+    statusText.style = 'font-family: "Kode Mono", monospace; font-optical-sizing: auto; font-weight: 800; color: yellow';
 
     try {
         console.log('📡 Sending POST request to /api/minikube/start');
@@ -325,9 +396,6 @@ async function startMinikube() {
                 } else {
                 console.warn('⚠️ Minikube start completed with warnings:', data.message || 'No message provided');
                 }
-                
-                // Force a connection check after startup attempt
-                setTimeout(checkConnection, 5000);
                 return data;
     } catch (err) {
         console.error('💥 Critical error starting Minikube:', {
@@ -340,16 +408,25 @@ async function startMinikube() {
         // Re-enable pod loading and reset button state
         isMinikubeOperationInProgress = false;
         console.log('🔄 Pod loading re-enabled after Minikube startup attempt');
-        
         // Force a connection check after startup - this will set the correct button state
-        setTimeout(checkConnection, 5000);
+        pollForConnection(500); // Poll for 30 seconds
     }
 }
 
 async function stopMinikube() {
     console.log('🛑 Initiating Minikube shutdown...');
+    addLogEntry('Shutting down Minikube...', 'kill');
     isMinikubeOperationInProgress = true;
     console.log('🚫 Pod loading disabled during Minikube shutdown');
+
+    const minikubeBtn = document.getElementById('minikubeBtn');
+    minikubeBtn.disabled = true;
+    statusDot.classList.add('working');
+    statusText.textContent = 'Disconnecting...';
+    statusText.style = 'font-family: "Kode Mono", monospace; font-optical-sizing: auto; font-weight: 800; color: yellow';
+
+    // Clear UI state immediately when starting shutdown
+    clearAllUIState();
 
     try {
         console.log('📡 Sending POST request to /api/minikube/stop');
@@ -364,8 +441,6 @@ async function stopMinikube() {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
     
-    // Force a connection check after shutdown
-    setTimeout(checkConnection, 1000);
     const data = await response.json();
     
     if (data.success) {
@@ -378,7 +453,6 @@ async function stopMinikube() {
     } else {
       console.warn('⚠️ Minikube stop completed with warnings:', data.message || 'No message provided');
     }
-    
     return data;
   } catch (err) {
     console.error('💥 Critical error stopping Minikube:', {
@@ -391,9 +465,8 @@ async function stopMinikube() {
         // Reset operation flag and button state
         isMinikubeOperationInProgress = false;
         console.log('ℹ️ Minikube operation completed');
-
         // Force a connection check after shutdown - this will set the correct button state
-        setTimeout(checkConnection, 1000);
+        pollForConnection(500)
     }
 }
 
@@ -421,8 +494,7 @@ async function loadNamespaces() {
             namespaceSelect.appendChild(option);
         });
 
-        // Load pods for the 'default' namespace initially
-        currentNamespace = 'default';
+        // Load pods for the current namespace
         loadPods(currentNamespace);
 
         // Add event listener to reload pods when namespace changes
@@ -474,9 +546,6 @@ async function loadPods(namespace = 'default') {
         addLogEntry('❌ Failed to load pods: ' + error.message, 'error');
         pods = [];
         renderPods();
-
-        // If we can't load pods, maybe we lost connection
-        setConnectionStatus(false);
     }
 }
 
@@ -635,10 +704,3 @@ function renderLogs() {
         </div>
     `).join('');
 }
-
-// Auto-refresh pods every 60 seconds when connected
-setInterval(() => {
-    if (isConnected) {
-        loadPods(currentNamespace);
-    }
-}, 60000);

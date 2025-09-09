@@ -421,10 +421,16 @@ h1 {
     height: 12px;
     border-radius: 50%;
     background: #ef4444;
+    animation: pulse 2s infinite;
 }
 
 .status-dot.connected {
     background: #10b981;
+    animation: pulse 2s infinite;
+}
+
+.status-dot.working {
+    background: #ffcc00;
     animation: pulse 2s infinite;
 }
 

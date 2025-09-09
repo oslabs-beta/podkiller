@@ -14,15 +14,17 @@ let k8sApi = kc.makeApiClient(k8s.CoreV1Api); // 9/8 DJ - Allow reassignment
 // Check Minikube status
 app.get('/api/status', async (req, res) => {
   try {
-  // Try to actually query something to verify real connectivity
-    const result = await k8sApi.listNamespacedPod({ 
-      namespace: 'default',
-      limit: 1 
-    });
+    // Try a simple API call to verify real connectivity
+    await k8sApi.listNamespacedPod({ namespace: 'default', limit: 1 });
     res.json({ connected: true });
   } catch (error) {
+    // If the call fails, we are not connected. Do not retry.
     console.log('❌ Kubernetes connection failed:', error.message);
+    res.json({ connected: false, error: error.message });
+  }
+});
     
+    /*
     // Try reloading config if connection fails
     if (reloadKubeConfig()) {
       try {
@@ -39,6 +41,7 @@ app.get('/api/status', async (req, res) => {
     }
     res.json({ connected: false, error: error.message });
   }});
+  */
 
 // Start Minikube
 app.post('/api/minikube/start', (req, res) => {
