@@ -165,22 +165,32 @@ app.post('/api/kill', async (req, res) => {
 
 // Sandar's GET reports
 app.get('/api/reports', async (req, res) => {
-  try {
-    const fs = await import('fs/promises');
-    const path = await import('path');
+    try {
+        const fs = await import('fs/promises');
+        const path = await import('path');
+        const reportDir = './reports';
 
-    const files = await fs.default.readdir('./reports');
-    const reports = await Promise.all(
-      files
-        .filter((file) => file.endsWith('.json'))
-        .map((file) =>
-          fs.default.readFile(path.default.join('./reports', file), 'utf8')
-        )
-    );
-    res.status(200).json({ reports: reports.map((r) => JSON.parse(r)) });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to load reports' });
-  }
+        // Check if the reports directory exists
+        const dirExists = await fs.default.stat(reportDir).catch(() => false);
+        if (!dirExists) {
+            return res.status(200).json({ reports: [] });
+        }
+
+        const files = await fs.default.readdir(reportDir);
+        const reports = [];
+
+        for (const file of files) {
+            if (file.endsWith('.json')) {
+                const filePath = path.default.join(reportDir, file);
+                const data = await fs.default.readFile(filePath, 'utf-8');
+                reports.push(JSON.parse(data));
+            }
+        }
+        res.status(200).json({ reports });
+    } catch (error) {
+        console.error('Failed to read reports:', error);
+        res.status(500).json({ error: 'Failed to retrieve reports' });
+    }
 });
 
 // Sandar's POST reports

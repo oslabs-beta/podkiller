@@ -1,4 +1,4 @@
-import { updateSessionStats, initializeChart, fetchReports, renderStatistics } from './chart.js'
+import { initializeChart, updateSessionStats, fetchReports, renderStatistics } from './chart.js'
 
 // Initial App State
 let isConnected = false;
@@ -532,23 +532,29 @@ async function killPod() {
         });
 
         if (response.ok) {
-            const result = await response.json();
-            result.results.forEach(res => {
-                addLogEntry(`Pod killed: ${res.killedPodName}`, 'kill');
-                if (res.replacementPodName) {
-                    addLogEntry(`Replacement pod created: ${res.replacementPodName}`, 'replacement');
-                }
-                if (res.recoveryTime !== null) {
-                    addLogEntry(`Pod recovered in ${res.recoveryTime.toFixed(2)} seconds`, 'success');
-                    updateSessionStats(res.recoveryTime);
-                } else {
-                    addLogEntry('Pod killed, but no new replacement pod found.', 'info');
-                }
-            });
-            fetchReports();
+    const result = await response.json();
+
+            if (result.success && Array.isArray(result.results)) {
+                result.results.forEach(res => {
+                    addLogEntry(`Pod killed: ${res.killedPodName}`, 'kill');
+                    if (res.replacementPodName) {
+                        addLogEntry(`Replacement pod created: ${res.replacementPodName}`, 'replacement');
+                    }
+                    if (res.recoveryTime !== null) {
+                        addLogEntry(`Pod recovered in ${res.recoveryTime.toFixed(2)} seconds`, 'success');
+                        updateSessionStats(res.recoveryTime);
+                    } else {
+                        addLogEntry('Pod killed, but no new replacement pod found.', 'info');
+                    }
+                });
+                fetchReports();
+            } else {
+                addLogEntry(`Kill operation failed: ${result.error || 'Unknown error'}`, 'error');
+            }
         } else {
             throw new Error('Failed to kill pod(s)');
         }
+
     } catch (error) {
         addLogEntry('Failed to complete kill operation: ' + error.message, 'error');
         updateSessionStats(null);

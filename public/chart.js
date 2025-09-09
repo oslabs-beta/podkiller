@@ -2,6 +2,8 @@ import { addLogEntry } from './app.js'
 
 // Current Session Stats Tracker
 let chart = null;
+let chartReady = false;
+
 let sessionStats = {
     podsKilled: 0,
     totalRecoveryTime: 0,
@@ -154,39 +156,38 @@ export function initializeChart() {
             }
         }
     });
+    chartReady = true;
+}
+
+// Use a small helper to wait for chart to exist
+export async function waitForChart() {
+    while (!chartReady) {
+        await new Promise(r => setTimeout(r, 50));
+    }
+    return chart;
 }
 
 // Fetch and display recovery reports
 export async function fetchReports() {
     try {
-        addLogEntry('Compiling recovery analytics...', 'info');
+        console.log('Attempting to fetch data from http://localhost:3000/api/reports...');
         const response = await fetch('http://localhost:3000/api/reports');
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
         const data = await response.json();
-        
-        if (!data.reports || data.reports.length === 0) {
-            addLogEntry('No recovery data found', 'error');
-            return;
-        }
+        console.log('Data received:', data);
 
-        const reports = data.reports
-        const labels = reports.map((r) =>
-            new Date(r.deletionTime).toLocaleTimeString()
-        );
-        const recoveryTimes = reports.map((r) => r.recoveryTime);
+        // Create a flat array of all recovery times from all reports.
+        const recoveryTimesData = data.reports
+            .flatMap(report => report.results.map(r => r.recoveryTime))
+            .filter(time => time !== null && time !== undefined);
 
-        // Update chart data
-        chart.data.labels = labels;
-        chart.data.datasets[0].data = recoveryTimes;
-        chart.update();
+        const labels = data.reports.map(r => new Date(r.deletionTime).toLocaleTimeString());
 
-        addLogEntry(`Loaded ${reports.length} recovery records`, 'success');
-    } catch (error) {
-        addLogEntry('Failed to load recovery data: ' + error.message, 'error');
-        console.error('Error fetching reports:', error);
+        const chartInstance = await waitForChart();
+        chartInstance.data.labels = labels;
+        chartInstance.data.datasets[0].data = recoveryTimesData;
+        chartInstance.update();
+
+    } catch (err) {
+        console.error(err);
     }
 }
