@@ -11,17 +11,28 @@ let sessionStats = {
     failedRecoveries: 0
 };
 
-// Function to update session statistics
-export function updateSessionStats(recoveryTime) {
-    sessionStats.podsKilled++;
-    
-    if (recoveryTime !== null && recoveryTime > 0) {
-        sessionStats.totalRecoveryTime += recoveryTime;
-        sessionStats.recoveryTimes.push(recoveryTime);
-    } else {
-        sessionStats.failedRecoveries++;
+// 9/9 DJ - Function to update session statistics with a report object
+export function updateSessionStats(report) {
+    if (!report || !report.results) {
+        console.error("Invalid report object provided.");
+        return;
     }
-    
+
+    // Correctly increment podsKilled by the number of results in the report
+    sessionStats.podsKilled += report.results.length;
+
+    // Iterate through each result in the report to update other stats
+    report.results.forEach(result => {
+        const recoveryTime = result.recoveryTime;
+        
+        if (recoveryTime !== null && recoveryTime > 0) {
+            sessionStats.totalRecoveryTime += recoveryTime;
+            sessionStats.recoveryTimes.push(recoveryTime);
+        } else {
+            sessionStats.failedRecoveries++;
+        }
+    });
+
     renderStatistics();
 }
 

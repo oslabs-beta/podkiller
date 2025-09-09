@@ -542,11 +542,11 @@ async function killPod() {
                     }
                     if (res.recoveryTime !== null) {
                         addLogEntry(`Pod recovered in ${res.recoveryTime.toFixed(2)} seconds`, 'success');
-                        updateSessionStats(res.recoveryTime);
                     } else {
                         addLogEntry('Pod killed, but no new replacement pod found.', 'info');
                     }
                 });
+                updateSessionStats(result);
                 fetchReports();
             } else {
                 addLogEntry(`Kill operation failed: ${result.error || 'Unknown error'}`, 'error');

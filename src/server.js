@@ -212,10 +212,6 @@ app.post('/api/reports', async (req, res) => {
   }
 });
 
-app.get('/api/test', (req, res) => {
-  res.json({ message: 'Test endpoint working!' });
-});
-
 app.listen(3000, () => {
   console.log('Dashboard running at http://localhost:3000');
 });
