@@ -9,30 +9,60 @@ app.use(express.static('public'));
 
 const kc = new k8s.KubeConfig();
 kc.loadFromDefault();
-const k8sApi = kc.makeApiClient(k8s.CoreV1Api);
+let k8sApi = kc.makeApiClient(k8s.CoreV1Api); // 9/8 DJ - Allow reassignment
 
 // Check Minikube status
 app.get('/api/status', async (req, res) => {
   try {
-    await k8sApi.listNamespacedPod({ namespace: 'default' });
+  // Try to actually query something to verify real connectivity
+    const result = await k8sApi.listNamespacedPod({ 
+      namespace: 'default',
+      limit: 1 
+    });
     res.json({ connected: true });
   } catch (error) {
-    res.json({ connected: false });
-  }
-});
+    console.log('❌ Kubernetes connection failed:', error.message);
+    
+    // Try reloading config if connection fails
+    if (reloadKubeConfig()) {
+      try {
+        await k8sApi.listNamespacedPod({ 
+          namespace: 'default',
+          limit: 1 
+        });
+        console.log('✅ Connection restored after config reload');
+        res.json({ connected: true });
+        return;
+      } catch (retryError) {
+        console.log('❌ Still failed after config reload');
+      }
+    }
+    res.json({ connected: false, error: error.message });
+  }});
 
 // Start Minikube
 app.post('/api/minikube/start', (req, res) => {
-  exec('minikube start', (error, stdout) => {
+  exec('minikube start', async (error, stdout) => {
     if (error) {
-      res.status(500).json({ error: error.message });
-    } else {
-      res.json({ success: true, output: stdout });
+      return res.status(500).json({ error: error.message });
     }
+
+    // Reload config and verify client
+    reloadKubeConfig();
+    try {
+      // Make a simple call to ensure the new client works
+      await k8sApi.listNamespace();
+      console.log('✅ Verified Kubernetes client after start');
+    } catch (err) {
+      console.error('❌ Could not verify client after start:', err.message);
+      return res.status(500).json({ error: 'Failed to verify connection after start' });
+    }
+
+    res.json({ success: true, output: stdout });
   });
 });
 
-//Stop Minikube
+// Stop Minikube
 app.post('/api/minikube/stop', (req, res) => {
   exec('minikube stop', (error, stdout) => {
     if (error) {
@@ -42,6 +72,19 @@ app.post('/api/minikube/stop', (req, res) => {
     }
   });
 });
+
+// 9/8 - Reload Minikube Config function
+function reloadKubeConfig() {
+  try {
+    kc.loadFromDefault();
+    k8sApi = kc.makeApiClient(k8s.CoreV1Api);
+    console.log('✅ Kubernetes configuration reloaded');
+    return true;
+  } catch (error) {
+    console.error('❌ Failed to reload Kubernetes config:', error);
+    return false;
+  }
+}
 
 // 8/13 DJ - Get all namespaces
 app.get('/api/namespaces', async (req, res) => {
