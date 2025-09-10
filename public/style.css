@@ -905,6 +905,7 @@ label[for="namespace-select"] {
     max-width: 100%;
     font-size: 0.8rem;
     font-style: italic;
+    opacity: 0.8;
 }
 
 .kill-button-home {

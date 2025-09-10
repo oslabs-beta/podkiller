@@ -485,13 +485,29 @@ function renderPods() {
             const podName = item.querySelector('.pod-name').textContent;
             const isSelected = item.classList.toggle('selected'); // Toggle the 'selected' class
 
+            const allSelected = podItems.length > 0 && Array.from(podItems).every(item => item.classList.contains('selected'));
+            const selectAllBtn = document.getElementById('selectAllBtn');
+            const targetCount = document.getElementById('podCount');
+
             // Add or remove the pod name from the selectedPods array
             if (isSelected) {
                 selectedPods.push(podName);
+                targetCount.textContent = '[ ' + selectedPods.length + ' ]';
+                if (allSelected) {
+                    selectAllBtn.textContent = 'Clear Selection';
+                } else {
+                    selectAllBtn.textContent = 'Select All Pods';
+                }
             } else {
+                selectAllBtn.textContent = 'Select All Pods';
                 const podIndex = selectedPods.indexOf(podName);
                 if (podIndex > -1) {
                     selectedPods.splice(podIndex, 1);
+                }
+                if (selectedPods.length === 0) {
+                    targetCount.textContent = '[ Random ]';
+                } else {
+                    targetCount.textContent = '[ ' + selectedPods.length + ' ]';
                 }
             }
          })
@@ -502,6 +518,7 @@ function renderPods() {
 document.getElementById('selectAllBtn').addEventListener('click', () => {
     const podItems = document.querySelectorAll('.pod-item');
     const selectAllBtn = document.getElementById('selectAllBtn');
+    const targetCount = document.getElementById('podCount');
 
     // Check if all pods are currently selected
     const allSelected = podItems.length > 0 && Array.from(podItems).every(item => item.classList.contains('selected'));
@@ -514,6 +531,7 @@ document.getElementById('selectAllBtn').addEventListener('click', () => {
         });
         selectedPods.length = 0; // Clear the array
         selectAllBtn.textContent = 'Select All Pods';
+        targetCount.textContent = '[ Random ]';
     } else {
         // Select all pods
         selectedPods.length = 0; // Clear the array first to prevent duplicates
@@ -523,6 +541,7 @@ document.getElementById('selectAllBtn').addEventListener('click', () => {
             selectedPods.push(podName);
         });
         selectAllBtn.textContent = 'Clear Selection';
+        targetCount.textContent = '[ ' + selectedPods.length + ' ]';
     }
 });
 
