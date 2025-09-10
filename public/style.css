@@ -168,7 +168,7 @@ h2 {
 .dashboard-container {
     position: relative;
     z-index: 10;
-    padding: 2rem;
+    padding: 1.8rem;
     min-height: calc(100vh - 1rem);
     max-height: calc(100vh - 1rem);
     background: transparent;
@@ -212,15 +212,15 @@ h1 {
     gap: 1rem;
     overflow: hidden;
     max-width: 90%;
+    padding-bottom: 2rem;
 }
 
 .center-column {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    overflow: hidden;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
 }
 
 .right-column {
@@ -232,6 +232,7 @@ h1 {
     background: transparent;
     border: double rgb(122, 223, 231) 3px;
     border-radius: 12px;
+    margin-bottom: 2rem;
 }
 
 
@@ -276,7 +277,6 @@ h1 {
     border-radius: 12px;
     background: rgba(255, 255, 255, 0.03);
     display: flex;
-    flex-grow: 1;
     flex-direction: column;
     align-items: center;
     margin-bottom: 3rem;
@@ -424,7 +424,7 @@ h1 {
     display: flex;
     justify-content: center;
     background: transparent;
-    font-size: 0.85rem;
+    font-size: 0.7rem;
 }
 
 .status-indicator {
@@ -508,15 +508,15 @@ label[for="namespace-select"] {
 @keyframes selector-glow {
   0% {
     border-color: #9bcfff;
-    box-shadow: 0 0 5px #00d5ff, 0 0 10px #00aaff;
+    box-shadow: 0 0 10px #00d5ff, 0 0 10px #00aaff;
   }
   50% {
     border-color: hsl(195, 47%, 34%);
-    box-shadow: 0 0 10px #00aaff, 0 0 20px #005680;
+    box-shadow: 0 0 20px #00aaff, 0 0 20px #005680;
   }
   100% {
     border-color: #9bcfff;
-    box-shadow: 0 0 5px #00d5ff, 0 0 10px #00aaff;
+    box-shadow: 0 0 10px #00d5ff, 0 0 10px #00aaff;
   }
 }
 
@@ -562,112 +562,19 @@ label[for="namespace-select"] {
     padding: 0.2rem;
 }
 
-button {
-    padding: 0.5rem;
-    border: none;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-
-button:active {
-    transform: translateY(0);
-}
-
-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.btn-primary {
-    background: #667eea;
-    color: white;
-}
-
-.btn-primary:hover {
-    background: #5a67d8;
-}
-
-@keyframes glitch {
-    0% {
-        text-shadow: 2px 2px #ef4444, -2px -2px #00ff88;
-        transform: skew(-5deg);
-    }
-    25% {
-        text-shadow: -2px -2px #ef4444, 2px 2px #00ff88;
-        transform: skew(5deg);
-    }
-    50% {
-        text-shadow: 2px -2px #ef4444, -2px 2px #00ff88;
-        transform: skew(-5deg);
-    }
-    75% {
-        text-shadow: -2px 2px #ef4444, 2px -2px #00ff88;
-        transform: skew(5deg);
-    }
-    100% {
-        text-shadow: 2px 2px #ef4444, -2px -2px #00ff88;
-        transform: skew(-5deg);
-    }
-}
-
-.btn-danger {
-    font-family: "Asimovian", sans-serif;
-    font-weight: 400;
-    font-style: normal;
-    text-shadow: 2px 2px 2px #de2e2e;
-    background: linear-gradient(45deg, #ef444436, #dc2626);
-    color: rgb(221, 199, 199);
-    font-size: 1.2rem;
-    padding: 2rem 1rem;
-    margin: 2rem;
-    border: 3px double #ef4444;
-    border-radius: 45%;
-    box-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    position: relative;
-    overflow: hidden;
-}
-
-.btn-danger:reveal {
-    opacity: 1;
-    transform: none;
-    /* You can also add a subtle animation for continuous effect */
-    animation: reveal var(--animation-duration) forwards ease-out;
-    transition: opacity 1s ease-out, transform 1s ease-out;
-}
-
-.btn-danger:hover {
-    box-shadow: 0 0 25px rgba(239, 68, 68, 0.8), 0 0 50px rgba(239, 68, 68, 0.4);
-    animation: glitch 0.5s infinite linear;
-    transform: none; /* Override the default hover transform */
-}
-
-.btn-danger:active {
-    animation: none;
-    transform: translateY(0);
-}
-
 /* Container for the Pods section */
 .pods-section {
     position: relative;
-    padding: 2.2rem 1rem;
+    padding: 2.6rem 1rem;
     background: transparent;
-    border: none;
+    border: 3px double rgb(122, 0, 128);
     border-radius: 0;
-    min-height: 0;
+    min-height: 30%;
+    max-height: 30%;
     flex-direction: column;
     overflow: visible; /* let pseudo-elements show */
     transition: transform 2.5s ease-out;
+    margin-top: -2rem;
 }
 
 /* Reticle crosshairs */
@@ -707,7 +614,7 @@ button:disabled {
     left: 0;
     right: 0;
     bottom: 0;
-    pointer-events: none; /* don't block clicks */
+    pointer-events: none; 
 }
 
 /* Shared pseudo-element base */
@@ -782,28 +689,6 @@ button:disabled {
     margin-top: -1.65rem;
 }
 
-@keyframes slide-in {
-  0% {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slide-out {
-  0% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-}
-
 .pod-item {
     padding: 0;
     margin: 1px; 
@@ -835,6 +720,28 @@ button:disabled {
 .pod-item.hide {
   /* Apply the animation with a delay */
   animation: slide-out 0.3s backwards;
+}
+
+@keyframes slide-in {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-out {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
 }
 
 .pod-item:hover {
@@ -952,10 +859,228 @@ button:disabled {
     }
 }
 
+.button-panel {
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+    min-height: 30%;
+    overflow: visible;
+    margin-top: -2rem;
+}
+
+.selectAllContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+#selectAllBtn {
+    max-width: 70%;
+    background: transparent;
+    color: rgb(167, 79, 255);
+    border: inset 3px rgb(86, 48, 255);
+    font-size: 1rem;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 800;
+    border-radius: 30%;
+    padding: 0.2rem 1.5rem;
+    margin-top: 0.2rem;
+    margin-bottom: 1rem;
+}
+
+#selectAllBtn:hover {
+    animation: selector-glow 1s infinite alternate ease-in-out;
+}
+
+.button-divider {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.button-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 100%;
+    font-size: 0.8rem;
+    font-style: italic;
+}
+
+.kill-button-home {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    padding-top: 0.6rem;
+}
+
+.lag-button-home {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    padding-top: -0.2rem;
+}
+
 .kill-button-container {
-    flex-shrink: 0;
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 50%;
+    max-width: 50%;
+    padding: 1rem;
+}
+
+.kill-button-target {
+    color: red;
+    display: flex;
+    justify-content: center;
+}
+
+.kill-button-count {
+    color: red;
+    display: flex;
+    justify-content: center;
+    margin-top: 0.3rem;
+}
+
+.btn-kill {
+    font-family: "Asimovian", sans-serif;
+    font-weight: 400;
+    text-shadow: 2px 2px 2px #de2e2e;
+    background: linear-gradient(45deg, #ef444436, #dc2626);
+    color: rgb(221, 199, 199);
+    font-size: 1.2rem;
+    border: 3px double #ef4444;
+    border-radius: 50%;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    overflow: hidden;
+    padding: 0.7rem;
+    max-width: 70%;
+}
+
+.btn-kill:reveal {
+    opacity: 1;
+    transform: none;
+    /* You can also add a subtle animation for continuous effect */
+    animation: reveal var(--animation-duration) forwards ease-out;
+    transition: opacity 1s ease-out, transform 1s ease-out;
+}
+
+.btn-kill:hover {
+    box-shadow: 0 0 25px rgba(239, 68, 68, 0.8), 0 0 50px rgba(239, 68, 68, 0.4);
+    animation: glitch 0.5s infinite linear;
+    transform: none; /* Override the default hover transform */
+}
+
+.btn-kill:active {
+    animation: none;
+    transform: translateY(0);
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+@keyframes glitch {
+    0% {
+        text-shadow: 2px 2px #ef4444, -2px -2px #00ff88;
+        transform: skew(-5deg);
+    }
+    25% {
+        text-shadow: -2px -2px #ef4444, 2px 2px #00ff88;
+        transform: skew(5deg);
+    }
+    50% {
+        text-shadow: 2px -2px #ef4444, -2px 2px #00ff88;
+        transform: skew(-5deg);
+    }
+    75% {
+        text-shadow: -2px 2px #ef4444, 2px -2px #00ff88;
+        transform: skew(5deg);
+    }
+    100% {
+        text-shadow: 2px 2px #ef4444, -2px -2px #00ff88;
+        transform: skew(-5deg);
+    }
+}
+
+.lag-button-container {
+    display: flex;
+    flex-direction: column;
+    max-width: 50%;
+    align-items: center;
+    padding: 1rem;
+}
+
+.lag-button-target {
+    color: rgb(0, 183, 255);
+    display: flex;
+    justify-content: center;
+}
+
+.lag-button-count {
+    color: rgb(0, 183, 255);
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 0.4rem;
+    max-width: 50%;
+}
+
+.lag-button-count input {
+    max-width: 50%;
+    max-height: 70%;
+    text-align: end;
+    color:rgb(0, 183, 255);
+    background: transparent;
+    border: 2px double rgb(0, 183, 255);
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-style: italic;
+    padding: 0.1rem;
+    margin-right: 0.1rem;
+}
+
+.btn-lag {
+    font-family: "Asimovian", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    text-shadow: 2px 2px 2px #2e48de;
+    background: linear-gradient(45deg, #445bef36, #262cdc);
+    color: rgb(221, 199, 199);
+    font-size: 1.2rem;
+    border: 3px double #4458ef;
+    border-radius: 50%;
+    box-shadow: 0 0 15px rgba(68, 117, 239, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    overflow: hidden;
+    padding: 0.7rem;
+    max-width: 70%;
+}
+
+.btn-lag:reveal {
+    opacity: 1;
+    transform: none;
+    /* You can also add a subtle animation for continuous effect */
+    animation: reveal var(--animation-duration) forwards ease-out;
+    transition: opacity 1s ease-out, transform 1s ease-out;
+}
+
+.btn-lag:hover {
+    box-shadow: 0 0 25px rgba(68, 82, 239, 0.8), 0 0 50px rgba(105, 68, 239, 0.4);
+    animation: glitch 0.5s infinite linear;
+    transform: none; /* Override the default hover transform */
+}
+
+.btn-lag:active {
+    animation: none;
+    transform: translateY(0);
 }
 
 /* Activity Log */
@@ -1030,20 +1155,5 @@ button:disabled {
 @keyframes spin {
     to {
         transform: rotate(360deg);
-    }
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .dashboard {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto auto 1fr;
-    }
-    
-    .left-column {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        height: 100%;
     }
 }

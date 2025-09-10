@@ -1,6 +1,7 @@
 import express from 'express';
 import { exec } from 'child_process';
 import { killPod } from './killpod.js';
+import { setLatency, clearLatency } from './latency.js';
 import * as k8s from '@kubernetes/client-node';
 
 const app = express();
@@ -214,4 +215,28 @@ app.post('/api/reports', async (req, res) => {
 
 app.listen(3000, () => {
   console.log('Dashboard running at http://localhost:3000');
+});
+
+// Pete's Latency Set function
+app.post('/api/latency/set', async (req, res) => {
+  try {
+    const { podName, namespace, latencyMs } = req.body;
+    await setLatency(podName, namespace, latencyMs);
+    res.json({ success: true, message: `Injected ${latencyMs}ms latency into ${podName}` });
+  } catch (error) {
+    console.error('Failed to set latency:', error.message);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Pete's Clear Latency function
+app.post('/api/latency/clear', async (req, res) => {
+  try {
+    const { podName, namespace } = req.body;
+    await clearLatency(podName, namespace);
+    res.json({ success: true, message: `Cleared latency from ${podName}` });
+  } catch (error) {
+    console.error('Failed to clear latency:', error.message);
+    res.status(500).json({ success: false, error: error.message });
+  }
 });

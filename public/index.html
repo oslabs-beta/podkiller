@@ -18,7 +18,7 @@
 
     <!-- TIE Fighter Cockpit Overlay -->
     <div class="cockpit-overlay">
-        <img src="cockpit.png" alt="TIE Fighter Cockpit">
+        <img src="./image/cockpit.png" alt="TIE Fighter Cockpit">
     </div>
 
     <!-- Main Dashboard Content -->
@@ -66,13 +66,43 @@
                         <div class="pods-corners bottom"></div>
                     </div>
 
-                    <div class="kill-button-container">
-                        <button class="btn-danger" id="killBtn" disabled style="flex-grow: 1;">
-                            <div>💀</div> 
-                            Kill Pod
-                        </button>
+                    <div class="button-panel">
+                        <div class="selectAllContainer">
+                            <button id="selectAllBtn">
+                                Select All Pods
+                            </button>
+                        </div>
+
+                        <div class="button-divider">
+
+                            <div class="kill-button-container">
+                                <div class="button-info">
+                                    <div class="kill-button-target">Target Pods:</div>
+                                    <div class="kill-button-count">Random</div>
+                                </div>
+                                <div class="kill-button-home">
+                                    <button class="btn-kill" id="killBtn">
+                                        <div>💀</div> 
+                                        Kill Pod
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="lag-button-container">
+                                <div class="button-info">
+                                    <div class="lag-button-target">Target Lag:</div>
+                                    <div class="lag-button-count"><input>ms</div>
+                                </div>
+                                <div class="lag-button-home">
+                                    <button class="btn-lag" id="lagBtn">
+                                        <div>🐢</div>
+                                        Add Lag
+                                    </button>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
                     </div>
-            </div>
 
             <div class="right-column">
                 <div class="panel analytics">

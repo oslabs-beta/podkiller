@@ -15,10 +15,15 @@ document.addEventListener('DOMContentLoaded', () => {
     initStarfield();
     checkConnection();
 
-    // Connection main function to Kill Button
+    // Connect main functions to Kill + Latency Buttons
     const killBtn = document.getElementById('killBtn');
     if (killBtn) {
         killBtn.addEventListener('click', killPod);
+    }
+
+    const lagBtn = document.getElementById('lagBtn');
+    if (lagBtn) {
+        lagBtn.addEventListener('click', handleLatencyAction);
     }
 
     // Load Namespaces and prompt user to pick a Namespace
@@ -70,7 +75,7 @@ function setConnectionStatus(connected) {
     const statusText = document.getElementById('statusText');
     const killBtn = document.getElementById('killBtn');
     const minikubeBtn = document.getElementById('minikubeBtn')
-    const namespaceSelect = document.getElementById('namespace-select');
+    const selectAllBtn = document.getElementById('selectAllBtn');
     
     // 9/8 DJ - This will probably become obsolete soon, 
     // but I needed a check for frontend elements that were used as flags
@@ -108,6 +113,7 @@ function setConnectionStatus(connected) {
         statusText.textContent = 'Disconnected';
         statusText.style = 'font-family: "Kode Mono", monospace; font-optical-sizing: auto; font-weight: 800; color: #f84848ff'
         killBtn.disabled = true;
+        selectAllBtn.disabled = true;
 
         // Set the button to "Start Minikube" when disconnected
         if (!isMinikubeOperationInProgress) {
@@ -418,6 +424,8 @@ async function loadPods(namespace = 'default') {
 function renderPods() {
     const podsList = document.getElementById('podsList');
     const killBtn = document.getElementById('killBtn');
+    const lagBtn = document.getElementById('lagBtn');
+    const selectAllBtn = document.getElementById('selectAllBtn');
 
     if (pods.length === 0) {
         podsList.innerHTML = `<div class="pod-item show">
@@ -425,9 +433,13 @@ function renderPods() {
             <span class="pod-status" style="margin: 0.5rem; color: white">Empty Namespace</span>
         </div>`;
         killBtn.disabled = true;
+        selectAllBtn.disabled = true;
+        lagBtn.disabled = true;
         return;
     } else {
         killBtn.disabled = false;
+        lagBtn.disabled = false;
+        selectAllBtn.disabled = false;
     }
     
     const podsHtml = pods.map(pod => {
@@ -486,6 +498,34 @@ function renderPods() {
     });
 }
 
+// Event listener for SelectAll Button
+document.getElementById('selectAllBtn').addEventListener('click', () => {
+    const podItems = document.querySelectorAll('.pod-item');
+    const selectAllBtn = document.getElementById('selectAllBtn');
+
+    // Check if all pods are currently selected
+    const allSelected = podItems.length > 0 && Array.from(podItems).every(item => item.classList.contains('selected'));
+    
+    // Toggle selection based on the current state
+    if (allSelected) {
+        // Clear all selections
+        podItems.forEach(item => {
+            item.classList.remove('selected');
+        });
+        selectedPods.length = 0; // Clear the array
+        selectAllBtn.textContent = 'Select All Pods';
+    } else {
+        // Select all pods
+        selectedPods.length = 0; // Clear the array first to prevent duplicates
+        podItems.forEach(item => {
+            item.classList.add('selected');
+            const podName = item.querySelector('.pod-name').textContent;
+            selectedPods.push(podName);
+        });
+        selectAllBtn.textContent = 'Clear Selection';
+    }
+});
+
 // Main Function = Kill Random Pod
 async function killPod() {
     fireLasers();
@@ -497,8 +537,8 @@ async function killPod() {
 
     // Disable button while function is running
     const btn = document.getElementById('killBtn');
-    btn.innerHTML = '<div class="spinner"></div>Killing';
     btn.disabled = true;
+    const selectAllBtn = document.getElementById('selectAllBtn');
 
     // Check if there are any pods selected by the user
     let podsToKill = [];
@@ -538,12 +578,12 @@ async function killPod() {
                 result.results.forEach(res => {
                     addLogEntry(`Pod killed: ${res.killedPodName}`, 'kill');
                     if (res.replacementPodName) {
-                        addLogEntry(`Replacement pod created: ${res.replacementPodName}`, 'replacement');
+                        addLogEntry(`Replacement: ${res.replacementPodName}`, 'replacement');
                     }
                     if (res.recoveryTime !== null) {
                         addLogEntry(`Pod recovered in ${res.recoveryTime.toFixed(2)} seconds`, 'success');
                     } else {
-                        addLogEntry('Pod killed, but no new replacement pod found.', 'info');
+                        addLogEntry('No replacement pod found', 'info');
                     }
                 });
                 updateSessionStats(result);
@@ -565,6 +605,7 @@ async function killPod() {
             loadPods(currentNamespace);
             btn.innerHTML = '<div>💀</div>Kill Pod';
             btn.disabled = false;
+            selectAllBtn.textContent = 'Select All Pods'
         }, 2000);
     }
 }
@@ -607,4 +648,64 @@ function renderLogs() {
             <div class="log-message">${log.message}</div>
         </div>
     `).join('');
+}
+
+async function handleLatencyAction() {
+    // Check if a pod is selected from the `selectedPods` array.
+    if (selectedPods.length === 0) {
+        addLogEntry('Please select at least one pod to add latency to.', 'error');
+        return;
+    }
+
+    const latencyMs = 500; // You can make this configurable later.
+
+    for (const podName of selectedPods) {
+        addLogEntry(`Attempting to set ${latencyMs}ms latency on pod: ${podName}`, 'info');
+        await setLatencyOnPod(podName, currentNamespace, latencyMs);
+    }
+}
+
+// Function to set latency
+async function setLatencyOnPod(podName, namespace, latencyMs) {
+  try {
+    const response = await fetch('/api/latency/set', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ podName, namespace, latencyMs }),
+    });
+
+    const result = await response.json();
+    if (response.ok) {
+      console.log(result.message);
+      addLogEntry(`Injected ${latencyMs}ms latency into pod: ${podName}`, 'info');
+    } else {
+      console.error(result.error);
+      addLogEntry(`Failed to set latency for ${podName}: `, 'error');
+      addLogEntry(`${result.error}`, 'error')
+    }
+  } catch (error) {
+    console.error('Failed to set latency:', error);
+  }
+}
+
+// Function to clear latency
+async function clearLatencyOnPod(podName, namespace) {
+  try {
+    const response = await fetch('/api/latency/clear', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ podName, namespace }),
+    });
+
+    const result = await response.json();
+    if (response.ok) {
+      console.log(result.message);
+      // You can add UI feedback here
+    } else {
+      console.error(result.error);
+      // You can add UI feedback here
+    }
+  } catch (error) {
+    console.error('Failed to clear latency:', error);
+  }
 }
