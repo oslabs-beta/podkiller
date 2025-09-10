@@ -27,130 +27,138 @@ async function getAvailableNamespaces() {
 }
 
 // 4. FUNCTIONALITY TO DELETE A POD
-async function killPod(namespace = null, specificPodNames = []) {
-    // namespace is the folder that holds the pods
-    let targetNamespace;
-    if (namespace) {
-      targetNamespace = namespace;
-      console.log(chalk.underline.blue('Using specified namespace:') + ' ' + chalk.bold.underline(targetNamespace));
+async function killPod(namespace, sendEvent, specificPodNames = []) {
+  try {
+    if (!namespace) namespace = "default";
+    sendEvent("info", { message: `Selected Namespace: ${namespace}` });
+    console.log(chalk.underline.blue('Using specified namespace:') + ' ' + chalk.bold.underline(namespace));
+    console.log(`Received specific pods to kill: ${chalk.bold.italic.underline.yellow(specificPodNames)}`);
+
+    // Ensure array
+    if (!Array.isArray(specificPodNames)) {
+      specificPodNames = [specificPodNames].filter(Boolean);
+    }
+
+    // If no pod names provided, pick one automatically
+    if (specificPodNames.length === 0) {
+      const res = await k8sApi.listNamespacedPod({ namespace });
+      const pods = res.body ? res.body.items : res.items;
+      
+      if (!pods || pods.length === 0) {
+        sendEvent("error", { message: "❌ No pods available to kill." });
+        return;
+      }
+      
+      // Filter for running pods first, fallback to any pod
+      const runningPods = pods.filter(pod => pod.status.phase === 'Running');
+      const podsToChooseFrom = runningPods.length > 0 ? runningPods : pods;
+      
+      // Pick a random pod instead of always the first one
+      const randomPod = podsToChooseFrom[Math.floor(Math.random() * podsToChooseFrom.length)];
+      specificPodNames = [randomPod.metadata.name];
+      
+      sendEvent("info", { message: `No pods specified, randomly selected: ${specificPodNames[0]}`});
+      console.log(`Randomly selected pod: ${chalk.bold.italic.underline.red(specificPodNames[0])}`);
     } else {
-      // Auto-detect and use first available namespace with pods
-      const availableNamespaces = await getAvailableNamespaces();
-      console.log(chalk.cyan('Available namespaces:'), availableNamespaces.join(', '));
-  
-      if (availableNamespaces.length > 0) {
-        const podsInNamespaces = await Promise.all(
-          availableNamespaces.map(async (ns) => {
-            try {
-              // Try different methods to list pods
-              let result;
-              try {
-                result = await k8sApi.listNamespacedPod({ namespace: ns });
-              } catch (error1) {
-                try {
-                  result = await k8sApi.listNamespacedPod(ns);
-                } catch (error2) {
-                  result = await k8sApi.listNamespacedPod(ns, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined);
-                }
-              }
-              return {
-                namespace: ns,
-                pods: (result.body ? result.body.items : result.items).length,
-              };
-            } catch (error) {
-              return { namespace: ns, pods: 0 };
-            }
-          })
-        );
-        const namespaceWithPods = podsInNamespaces.find(p => p.pods > 0);
-        if (namespaceWithPods) {
-          targetNamespace = namespaceWithPods.namespace;
-          console.log(chalk.underline.blue('Auto-detected namespace with pods:') + ' ' + chalk.bold.underline(targetNamespace));
-        } else {
-          throw new Error('No pods found in any namespace.');
-        }
-      } else {
-        throw new Error('No namespaces found.');
+      sendEvent("kill", { message: `Killing ${specificPodNames.length} specified pods` });
+      console.log(`Killing specified pods: ${chalk.bold.italic.underline.red(specificPodNames)}`);
+    }
+
+    // Validate that specified pods exist in the namespace
+    if (specificPodNames.length > 0) {
+      const res = await k8sApi.listNamespacedPod({ namespace });
+      const existingPods = res.body ? res.body.items : res.items;
+      const existingPodNames = existingPods.map(pod => pod.metadata.name);
+      
+      const invalidPods = specificPodNames.filter(name => !existingPodNames.includes(name));
+      if (invalidPods.length > 0) {
+        sendEvent("error", { message: `❌ Pods not found in namespace ${namespace}: ${invalidPods.join(', ')}` });
+        return;
       }
     }
-  
-    console.log(chalk.underline.blue('Killing Pod(s):'));
-    
-    // 🎯 Use Promise.all() to concurrently delete all pods in the specificPodNames array
-    const killPromises = specificPodNames.map(podName => {
-      return new Promise(async (resolve, reject) => {
-        try {
-          console.log(`Attempting to delete pod: ${podName} in namespace: ${targetNamespace}`);
-          
-          // Use the working method (object parameters)
-          const podDeletion = await k8sApi.deleteNamespacedPod({
-            name: podName,
-            namespace: targetNamespace
-          });
-          
-          // Handle different response formats
-          const podData = podDeletion.body || podDeletion;
-          const metadata = podData.metadata || {};
-          
-          console.log(`     Killed Pod: ${chalk.bold.italic.underline.red(metadata.name || podName)}`);
-          resolve({ 
-            killedPodName: metadata.name || podName, 
-            deletionTime: new Date(metadata.deletionTimestamp || new Date()),
-            deletionStamp: metadata.deletionTimestamp
-          });
-        } catch (error) {
-          console.error(`Error killing pod ${podName}: ${error.message}`);
-          reject(error);
-        }
+    console.log(`Killing Pod(s) in: ${namespace}`);
+
+    // Track killed pods AND claimed replacements
+    const killedPods = [];
+    const claimedReplacements = new Set();
+    const finalResults = []; // Track results for report
+
+    // Delete pods
+    for (const podName of specificPodNames) {
+      sendEvent("kill", { message: `💀 Deleting pod: ${podName}` });
+      console.log(`      Deleting Pod: ${chalk.bold.italic.underline.red(podName)}`);
+      await k8sApi.deleteNamespacedPod({ name: podName, namespace });
+      killedPods.push({
+        killedPodName: podName,
+        deletionTime: new Date()
       });
-    });
-  
-    try {
-      // Wait for all kill promises to resolve before proceeding
-      const killedPods = await Promise.all(killPromises);
-      
-      // Find the replacement pod(s) for the killed pod(s)
-      const newPodPromises = killedPods.map(killedPod => findReplacementPod(killedPod, targetNamespace));
-      const newPodsFound = await Promise.all(newPodPromises);
-      
-      const finalResults = await Promise.all(newPodsFound.map(async (newPod) => {
-        if (newPod && newPod.replacementPodName) {
-          const recoveryTime = await waitForPodReady(targetNamespace, newPod.replacementPodName, newPod.deletionTime);
-          return {
-            killedPodName: newPod.killedPodName,
-            replacementPodName: newPod.replacementPodName,
-            recoveryTime: recoveryTime
-          };
-        } else {
-          return {
-            killedPodName: newPod ? newPod.killedPodName : 'unknown',
-            replacementPodName: null,
-            recoveryTime: null
-          };
-        }
-      }));
-    
-      // Create a combined report for all pods killed
-      const report = {
-        deletionTime: new Date().toISOString(),
-        results: finalResults,
-      };
-      
-      // Send the report to the dashboard
-      await saveReportToDashboard(report);
-    
-      return { success: true, results: finalResults };
-      
-    } catch (error) {
-      console.error('Error in killPod operation:', error);
-      return { success: false, error: error.message };
     }
+
+    // Wait for replacement pod(s) and build results
+    for (const killed of killedPods) {
+      const newPod = await findReplacementPod(killed, namespace, sendEvent, claimedReplacements);
+
+      let resultData = {
+        killedPodName: killed.killedPodName,
+        replacementPodName: null,
+        recoveryTime: null
+      };
+
+      if (newPod && newPod.replacementPodName) {
+        claimedReplacements.add(newPod.replacementPodName);
+        resultData.replacementPodName = newPod.replacementPodName;
+
+        const recoveryTime = await waitForPodReady(
+          namespace,
+          newPod.replacementPodName,
+          newPod.deletionTime,
+          sendEvent
+        );
+
+        resultData.recoveryTime = recoveryTime;
+
+        if (recoveryTime !== null) {
+          sendEvent("done", {
+            message: `✅ ${newPod.replacementPodName} recovered in ${recoveryTime.toFixed(2)}s`
+          });
+          console.log(`✅ ${chalk.bold.italic.underline.green(newPod.replacementPodName)} recovered in ${chalk.bold.italic.underline.green(recoveryTime.toFixed(2))}s`);
+        } else {
+          sendEvent("done", {
+            message: `⚠️ Replacement ${newPod.replacementPodName} never became ready`
+          });
+          console.log(`⚠️ Replacement ${chalk.bold.italic.underline.red(newPod.replacementPodName)} never became ready`);
+        }
+      } else {
+        sendEvent("done", {
+          message: `⚠️ No replacement pod found for ${killed.killedPodName}`
+        });
+        console.log(`⚠️ No replacement pod found for ${chalk.bold.italic.underline.red(killed.killedPodName)}`);
+      }
+
+      // Add this result to finalResults
+      finalResults.push(resultData);
+    }
+
+    // Create and save the report
+    const report = {
+      deletionTime: new Date().toISOString(),
+      results: finalResults,
+    };
+
+    // Send the report to the dashboard
+    await saveReportToDashboard(report);
+    console.log(`📊 Report saved with ${finalResults.length} results`);
+
+  } catch (error) {
+    sendEvent("error", { message: `Error in killPod operation: ${error.message}` });
+    console.log(`Error in killPod operation: ${chalk.bold.italic.underline.red(error.message)}`);
+  }
 }
 
-async function findReplacementPod(killedPod, namespace) {
+async function findReplacementPod(killedPod, namespace, sendEvent = () => {}, claimedReplacements = new Set()) {
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  const maxAttempts = 30; // wait up to ~30 seconds
+  const maxAttempts = 30; // ~30 seconds
   const interval = 1000;  // check every 1s
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -159,40 +167,59 @@ async function findReplacementPod(killedPod, namespace) {
       const pods = (res.body ? res.body.items : res.items);
       const alivePods = pods.filter(pod => !pod.metadata.deletionTimestamp);
 
-      // Look for Pending pod (being scheduled)
-      const pendingPods = alivePods.filter(pod => pod.status.phase === 'Pending');
+      // 🔍 Look for Pending pod that hasn't been claimed
+      const pendingPods = alivePods.filter(pod => 
+        pod.status.phase === 'Pending' && 
+        !claimedReplacements.has(pod.metadata.name));
+
       if (pendingPods.length > 0) {
-        console.log(`     🔄 Found replacement pod (Pending): ${pendingPods[0].metadata.name}`);
+        const pendingName = pendingPods[0].metadata.name;
+        sendEvent('replacement', { message: `🔄 Found Replacement (Pending): ${pendingName}` });
+        console.log(`🔄 Found Replacement (Pending): ${chalk.bold.italic.underline.blue(pendingName)}`);
         return {
           killedPodName: killedPod.killedPodName,
-          replacementPodName: pendingPods[0].metadata.name,
+          replacementPodName: pendingName,
           deletionTime: killedPod.deletionTime
         };
       }
 
-      // Look for recently created pods (Running but new)
+      // Look for recently created pods that haven't been claimed yet
       const recentPods = alivePods.filter(pod => {
+        if (claimedReplacements.has(pod.metadata.name)) return false;
         const creationTime = new Date(pod.metadata.creationTimestamp);
-        return creationTime > killedPod.deletionTime;
+        // Look for pods created after deletion time, with a small buffer for timing
+        const timeDiff = creationTime - killedPod.deletionTime;
+        return timeDiff > -5000 && timeDiff < 60000; // 5 seconds before to 60 seconds after
       });
 
+      // Sort by creation time to get the most recent unclaimed pod
+      recentPods.sort((a, b) => new Date(b.metadata.creationTimestamp) - new Date(a.metadata.creationTimestamp));
+
       if (recentPods.length > 0) {
-        console.log(`     🔄 Found recently created pod: ${recentPods[0].metadata.name}`);
+        const recentName = recentPods[0].metadata.name;
+        sendEvent('replacement', { message: `🔄 Found recently created pod: ${recentName}` });
+        console.log(`🔄 Found recently created pod: ${chalk.bold.italic.underline.blue(recentName)}`);
         return {
           killedPodName: killedPod.killedPodName,
-          replacementPodName: recentPods[0].metadata.name,
+          replacementPodName: recentName,
           deletionTime: killedPod.deletionTime
         };
       }
 
+      // Still waiting
+      sendEvent('replacement', { message: `⏳ Waiting for replacement pod... (attempt ${attempt + 1})` });
+      console.log(`⏳ Waiting for replacement pod... (attempt ${chalk.bold.italic.underline.blue(attempt + 1)})`);
+
     } catch (error) {
-      console.error(`Error checking for replacement pod: ${error.message}`);
+      sendEvent('error', { message: `Error checking for replacement pod: ${error.message}` });
+      console.log(`Error checking for replacement pod: ${chalk.bold.italic.underline.red(error.message)}`);
     }
 
     await sleep(interval);
   }
 
-  console.log(`     ⚠️ No replacement pod found for ${killedPod.killedPodName} after waiting`);
+  sendEvent('replacement', { message: `⚠️ No replacement pod found for ${killedPod.killedPodName} after waiting` });
+  console.log(`⚠️ No replacement pod found for ${chalk.bold.italic.underline.red(killedPod.killedPodName)} after waiting`);
   return {
     killedPodName: killedPod.killedPodName,
     replacementPodName: null,
@@ -201,62 +228,91 @@ async function findReplacementPod(killedPod, namespace) {
 }
 
 // Function to wait for pod to be ready and measure recovery time
-async function waitForPodReady(namespace, podName, deletionTime) {
+async function waitForPodReady(namespace, podName, deletionTime, sendEvent = () => {}) {
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-  
+
   try {
-    console.log(chalk.italic.grey('     Measuring Ready Time for:'), podName, '...');
-    
+    sendEvent('recovery', { message: `⏳ Measuring Ready Time for: ${podName}...` });
+    console.log(`⏳ Measuring Ready Time for: ${chalk.bold.italic.underline.blue(podName)}...`);
+
     let attempts = 0;
-    const maxAttempts = 60; // Max 60 seconds
-    
+    const maxAttempts = 60; // wait up to 60s
+
     while (attempts < maxAttempts) {
       try {
-        // Get the specific pod
         const res = await k8sApi.readNamespacedPod({ name: podName, namespace });
         const pod = res.body || res;
-        
-        // Check if pod is ready
+
         if (pod.status.phase === 'Running') {
-          // Check if all containers are ready
           const containerStatuses = pod.status.containerStatuses || [];
-          const allReady = containerStatuses.length > 0 && containerStatuses.every(status => status.ready === true);
-          
+          const allReady = containerStatuses.length > 0 &&
+                           containerStatuses.every(status => status.ready === true);
+
           if (allReady) {
             const readyTime = new Date();
-            
-            //  Use creationTimestamp of the new pod
             const creationTime = new Date(pod.metadata.creationTimestamp);
             const recoveryTime = (readyTime - creationTime) / 1000;
-            
-            console.log(`     ✅ Pod ${podName} is ${chalk.bold.italic.underline.green('Ready')}!`);
-            console.log(`     ✅ Recovery Time: ${chalk.bold.italic.underline.green(recoveryTime.toFixed(2), 'seconds')}`);
-            
+
+            sendEvent('success', { message: `✅ Pod ${podName} is Ready!` });
+            console.log(`✅ ${chalk.bold.italic.underline.green(podName)} is Ready!`);
+            sendEvent('success', { message: `✅ Recovery Time: ${recoveryTime.toFixed(2)} seconds` });
+            console.log(`✅ Recovery Time: ${chalk.bold.italic.underline.green(recoveryTime.toFixed(2))} seconds`);
+
             return recoveryTime;
           }
         }
-        
-        console.log(`     ⏳ Status: ${chalk.underline.italic.yellow(pod.status?.phase || 'Unknown')} (attempt ${attempts + 1})`);
-        
+
+        sendEvent('recovery', { message: `Status: ${pod.status?.phase || 'Unknown'} (attempt ${attempts + 1})` });
+        console.log(`      Status: ${chalk.bold.italic.underline.blue(pod.status?.phase || 'Unknown')} (attempt ${attempts + 1})`);
+
       } catch (error) {
-        // Pod might not exist yet, continue waiting
-        console.log(`     ⏳ Waiting for pod to appear... (attempt ${attempts + 1})`);
+        sendEvent('recovery', { message: `⏳ Waiting for pod ${podName} to appear... (attempt ${attempts + 1})` });
+        console.log(`      Waiting for pod ${chalk.bold.italic.underline.blue(podName)} to appear... (attempt ${attempts + 1})`);
       }
-      
+
       await sleep(1000);
       attempts++;
     }
-    
-    console.log(`     ⚠️ Timeout waiting for pod ${podName} to be ready`);
+
+    sendEvent('recovery', { message: `⚠️ Timeout waiting for pod ${podName} to be ready` });
+    console.log(`⚠️ Timeout waiting for pod ${chalk.bold.italic.underline.blue(podName)} to be ready`);
+
     return null;
-    
+
   } catch (error) {
-    console.error(`Error waiting for pod ready: ${error.message}`);
+    sendEvent('error', { message: `Error waiting for pod ready: ${error.message}` });
+    console.log(`Error waiting for pod ready: ${chalk.bold.italic.underline.red(error.message)}`);
+
     return null;
   }
 }
 
-// Sandar's measureRecovery function
+// Sandar's saveReportToDashboard function
+async function saveReportToDashboard(report) {
+  try {
+    const axios = await import('axios');
+    const respond = await axios.default.post('http://localhost:3000/api/reports', report);
+    console.log(`Report sent to dashboard: ${respond.data.filename || 'success'}`);
+  } catch (error) {
+    console.error('Failed to send report to dashboard:', error.message);
+  }
+}
+
+export {killPod, getAvailableNamespaces};
+
+/* 
+Pete's original label selector function
+
+This makes it so when you ==> node killpod.js WhatYouWriteHereIsLabelSelector
+Check if this file is being run directly (not imported)
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const labelSelector = process.argv[2] || null;
+  const namespace = process.argv[3] || null;
+  killPod(labelSelector, namespace);
+}
+
+Sandar's old measureRecovery function
+
 async function measureRecovery(podName, deletionTime, namespace) {
   console.log(chalk.italic.grey('     Measuring Ready Time for:'), podName,'...');
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -300,26 +356,4 @@ async function measureRecovery(podName, deletionTime, namespace) {
   
   return recoveryTime;
 }
-
-/* Pete's original label selector function
-This makes it so when you ==> node killpod.js WhatYouWriteHereIsLabelSelector
-Check if this file is being run directly (not imported)
-if (import.meta.url === `file://${process.argv[1]}`) {
-  const labelSelector = process.argv[2] || null;
-  const namespace = process.argv[3] || null;
-  killPod(labelSelector, namespace);
-}
 */
-
-// Sandar's saveReportToDashboard function
-async function saveReportToDashboard(report) {
-  try {
-    const axios = await import('axios');
-    const respond = await axios.default.post('http://localhost:3000/api/reports', report);
-    console.log(`Report sent to dashboard: ${respond.data.filename || 'success'}`);
-  } catch (error) {
-    console.error('Failed to send report to dashboard:', error.message);
-  }
-}
-
-export {killPod, getAvailableNamespaces};

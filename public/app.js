@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Connect main functions to Kill + Latency Buttons
     const killBtn = document.getElementById('killBtn');
     if (killBtn) {
-        killBtn.addEventListener('click', killPod);
+        killBtn.addEventListener('click', () => killPod(currentNamespace));
     }
 
     const lagBtn = document.getElementById('lagBtn');
@@ -103,7 +103,7 @@ function setConnectionStatus(connected) {
 
         // Only log connection message if state actually changed
         if (!wasConnected) {
-            addLogEntry('Connected to Minikube', 'success');
+            addLogEntry('Connected to Minikube', 'done');
             addLogEntry('Please select a Namespace', 'error');
         }
 
@@ -134,7 +134,7 @@ function clearNamespaces() {
     const namespaceSelect = document.getElementById('namespace-select');
     if (namespaceSelect) {
         namespaceSelect.textContent = '---';
-        currentNamespace = 'default'; // Reset to default
+        currentNamespace = 'null';
         addLogEntry('Namespace list cleared', 'error');
     }
 }
@@ -157,13 +157,16 @@ function clearPods(callback) {
         // Set a timeout to clear the list after the animation is complete
         const totalAnimationTime = (podItems.length * 0.05) + 0.5;
         setTimeout(() => {
-            podsList.innerHTML = ''; // Only clear the HTML
+            pods = []; // Clear the data array first
+            renderPods();
             if (callback) {
                 callback();
             }
-        }, totalAnimationTime * 1000); // Convert to milliseconds
+        }, totalAnimationTime * 1000);
     } else {
-        // No pods to animate, just proceed to the callback
+        // No pods to animate, just show the empty state and proceed to the callback
+        pods = []; // Clear the data array
+        renderPods();
         if (callback) {
             callback();
         }
@@ -184,7 +187,7 @@ function initializeUIState() {
     loadNamespaces();
     // Refresh chart data
     fetchReports();
-    addLogEntry('UI state initialized', 'success');
+    addLogEntry('UI state initialized', 'done');
 }
 
 
@@ -443,6 +446,7 @@ function renderPods() {
     }
     
     const podsHtml = pods.map(pod => {
+        console.log('Pod status for', pod.name, ':', pod.status);
         let liquidClass = '';
         let statusText = pod.status;
         let statusClass = '';
@@ -546,87 +550,113 @@ document.getElementById('selectAllBtn').addEventListener('click', () => {
 });
 
 // Main Function = Kill Random Pod
-async function killPod() {
+async function killPod(namespace) {
     fireLasers();
+    const btn = document.getElementById('killBtn');
+    btn.disabled = true;
 
-    if (!isConnected) {
-        addLogEntry('Not connected to cluster', 'error');
+    let currentKillSession = {
+        results: [],
+        deletionTime: new Date().toISOString()
+    };
+    
+    if (!namespace) namespace = currentNamespace;
+
+    addLogEntry(`Sending kill request for a pod in: ${namespace}`, 'kill');
+
+    // Close any old stream first
+    if (window.killStream) {
+        window.killStream.close();
+    }
+
+    // Open a new event stream from backend
+    const streamUrl = `/api/killpod?namespace=${namespace}&podNames=${encodeURIComponent(JSON.stringify(selectedPods))}`;
+    const eventSource = new EventSource(streamUrl);
+    window.killStream = eventSource;
+
+    let operationCompleted = false;
+
+    // Handle normal messages
+    eventSource.onmessage = (event) => {
+    let data;
+    try {
+        data = JSON.parse(event.data);
+    } catch (parseError) {
+        addLogEntry(`⚠️ Failed to parse JSON: ${event.data}`, 'error');
         return;
     }
 
-    // Disable button while function is running
-    const btn = document.getElementById('killBtn');
-    btn.disabled = true;
-    const selectAllBtn = document.getElementById('selectAllBtn');
-
-    // Check if there are any pods selected by the user
-    let podsToKill = [];
-    if (selectedPods.length > 0) {
-        // Option 1: User selected pods
-        podsToKill = selectedPods;
-        addLogEntry(`Initiating kill for ${podsToKill.length} selected pods...`, 'info');
-    } else {
-        // Option 2: Fallback to killing a random pod
-        const runningPods = pods.filter(p => p.status === 'Running');
-        if (runningPods.length === 0) {
-            addLogEntry('No running pods to kill', 'error');
-            btn.innerHTML = '<div>💀</div>Kill Pod';
-            btn.disabled = false;
-            return;
-        }
-        const targetPod = runningPods[Math.floor(Math.random() * runningPods.length)];
-        podsToKill = [targetPod.name]; // Create a single-item array
-        addLogEntry(`Initiating kill for random pod: ${targetPod.name}`, 'info');
-    }
-
-    // Await the fetch response to ensure the kill operation is complete.
     try {
-        const response = await fetch('/api/kill', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                podNames: podsToKill, // Pass the array to the backend
-                namespace: currentNamespace
-            })
-        });
-
-        if (response.ok) {
-    const result = await response.json();
-
-            if (result.success && Array.isArray(result.results)) {
-                result.results.forEach(res => {
-                    addLogEntry(`Pod killed: ${res.killedPodName}`, 'kill');
-                    if (res.replacementPodName) {
-                        addLogEntry(`Replacement: ${res.replacementPodName}`, 'replacement');
-                    }
-                    if (res.recoveryTime !== null) {
-                        addLogEntry(`Pod recovered in ${res.recoveryTime.toFixed(2)} seconds`, 'success');
-                    } else {
-                        addLogEntry('No replacement pod found', 'info');
-                    }
-                });
-                updateSessionStats(result);
-                fetchReports();
-            } else {
-                addLogEntry(`Kill operation failed: ${result.error || 'Unknown error'}`, 'error');
-            }
-        } else {
-            throw new Error('Failed to kill pod(s)');
+        // Refresh pods list when replacement pods are found
+        if (data.type === 'replacement') {
+            loadPods(currentNamespace);
+        }
+        
+        // Refresh pods list during recovery monitoring
+        if (data.type === 'recovery') {
+            loadPods(currentNamespace);
         }
 
-    } catch (error) {
-        addLogEntry('Failed to complete kill operation: ' + error.message, 'error');
-        updateSessionStats(null);
-    } finally {
-        // Re-enable the button and reload pods only after the operation is complete
-        setTimeout(() => {
+        // Track recovery data for chart updates
+        if (data.type === 'done' && data.message && data.message.includes('recovered in')) {
+            const recoveryMatch = data.message.match(/recovered in ([\d.]+)s/);
+            
+            if (recoveryMatch) {
+                const podNameMatch = data.message.match(/✅ (.+?) recovered/);
+                currentKillSession.results.push({
+                    killedPodName: podNameMatch ? podNameMatch[1] : 'unknown',
+                    replacementPodName: podNameMatch ? podNameMatch[1] : 'unknown',
+                    recoveryTime: parseFloat(recoveryMatch[1])
+                });
+            }
+
+            // Update session stats with collected data
+            if (currentKillSession.results.length > 0) {
+                updateSessionStats(currentKillSession);
+                fetchReports();
+            }
+
+            // Reset for next operation
+            currentKillSession = {
+                results: [],
+                deletionTime: new Date().toISOString()
+            };
+        }
+        
+        if (data.type === 'done') {
+            // Operation complete - cleanup
+            operationCompleted = true;
             selectedPods = [];
-            loadPods(currentNamespace);
-            btn.innerHTML = '<div>💀</div>Kill Pod';
-            btn.disabled = false;
-            selectAllBtn.textContent = 'Select All Pods'
-        }, 2000);
+            setTimeout(() => {
+                loadPods(currentNamespace);
+                btn.disabled = false;
+                fetchReports();
+                document.getElementById('selectAllBtn').textContent = 'Select All Pods';
+                document.getElementById('podCount').textContent = '[ Random ]';
+            }, 2000);
+            
+            if (!data.message) {
+                console.log('KillPod operation completed successfully');
+            }
+        }
+        
+        if (data.message) {
+            const logType = data.type || 'info';
+            addLogEntry(`${data.message}`, logType);
+        }
+    } catch (processingError) {
+        addLogEntry(`⚠️ Error processing event data: ${processingError.message}`, 'error');
+        console.error('Event processing error:', processingError, 'Data:', data);
     }
+};
+
+    // Handle errors
+    eventSource.onerror = (err) => {
+        if (!operationCompleted) {
+            addLogEntry("❌ KillPod stream error. Closing connection.", 'error');
+        }
+        eventSource.close();
+    };
 }
 
 // Add log entry

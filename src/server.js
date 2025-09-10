@@ -24,25 +24,6 @@ app.get('/api/status', async (req, res) => {
     res.json({ connected: false, error: error.message });
   }
 });
-    
-    /*
-    // Try reloading config if connection fails
-    if (reloadKubeConfig()) {
-      try {
-        await k8sApi.listNamespacedPod({ 
-          namespace: 'default',
-          limit: 1 
-        });
-        console.log('✅ Connection restored after config reload');
-        res.json({ connected: true });
-        return;
-      } catch (retryError) {
-        console.log('❌ Still failed after config reload');
-      }
-    }
-    res.json({ connected: false, error: error.message });
-  }});
-  */
 
 // Start Minikube
 app.post('/api/minikube/start', (req, res) => {
@@ -150,18 +131,43 @@ app.get('/api/pods', async (req, res) => {
 
 // 8/13 DJ - Kill pod (accepts namespace entry)
 // 9/9 DJ - Kill pod (accepts array of pod names)
-app.post('/api/kill', async (req, res) => {
-  try {
-    const { namespace, podNames } = req.body;
-    const result = await killPod(namespace, podNames); // Pass the array of names
-    if (result.success) {
-      res.json({ success: true, results: result.results });
-    } else {
-      res.status(500).json({ error: result.error });
+app.get('/api/killpod', async (req, res) => {
+    const namespace = req.query.namespace || 'default';
+
+    // Extract and parse podNames from query parameters
+    let selectedPods = [];
+    if (req.query.podNames) {
+      try {
+        selectedPods = JSON.parse(decodeURIComponent(req.query.podNames));
+        if (!Array.isArray(selectedPods)) {
+          selectedPods = [];
+        }
+      } catch (error) {
+        console.log('Failed to parse podNames, using empty array:', error.message);
+        selectedPods = [];
+      }
     }
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+
+    console.log(`Received kill request for namespace: ${namespace}, pods: ${JSON.stringify(selectedPods)}`);
+
+    // Set headers for Server-Sent Events (SSE)
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    // Helper function to push events
+    const sendEvent = (type, data) => {
+      res.write(`data: ${JSON.stringify({ type, ...data })}\n\n`);
+    };
+
+    try {
+      await killPod(namespace, sendEvent, selectedPods);
+      sendEvent('done', { message: 'killPod Operation Complete' }); 
+    } catch (error) {
+      sendEvent('error', { message: error.message });
+    } finally {
+      res.end();
+    }
 });
 
 // Sandar's GET reports

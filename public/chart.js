@@ -186,16 +186,23 @@ export async function fetchReports() {
         const data = await response.json();
         console.log('Data received:', data);
 
-        // Create a flat array of all recovery times from all reports.
-        const recoveryTimesData = data.reports
-            .flatMap(report => report.results.map(r => r.recoveryTime))
-            .filter(time => time !== null && time !== undefined);
+        // Show each recovery time as a separate data point
+        const chartData = [];
+        const labels = [];
 
-        const labels = data.reports.map(r => new Date(r.deletionTime).toLocaleTimeString());
+        data.reports.forEach(report => {
+            report.results.forEach((result, index) => {
+                if (result.recoveryTime !== null && result.recoveryTime !== undefined) {
+                    chartData.push(result.recoveryTime);
+                    const baseTime = new Date(report.deletionTime).toLocaleTimeString();
+                    labels.push(`${baseTime} (Pod ${index + 1})`);
+                }
+            });
+        });
 
         const chartInstance = await waitForChart();
         chartInstance.data.labels = labels;
-        chartInstance.data.datasets[0].data = recoveryTimesData;
+        chartInstance.data.datasets[0].data = chartData;
         chartInstance.update();
 
     } catch (err) {

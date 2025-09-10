@@ -676,12 +676,14 @@ label[for="namespace-select"] {
     flex-direction: column;
     flex: 1;         
     min-height: 100%;
+    min-width: 100%;
 }
 
 .pods-grid-wrapper {
     height: calc(4 * 2.2rem + 1rem); /* Height for 4 pods + some padding */
     overflow-y: auto;
     overflow-x: hidden;
+    min-width: 100%;
     flex-shrink: 0; /* Prevents the wrapper from shrinking */
     border: rgba(255, 110, 97, 0.721) 3px groove;
     animation: reticle-pulse 4s linear infinite;
@@ -1108,6 +1110,10 @@ button:disabled {
 
 .log-entry.kill {
     border-left-color: #ef4444;
+}
+
+.log-entry.done {
+    border-left-color: #10b981;
 }
 
 .log-entry.success {
