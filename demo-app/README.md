@@ -104,7 +104,11 @@ kubectl delete -f deployment.yaml
 
 **Pod not starting / ErrImageNeverPull:**
 - Ensure you ran `eval $(minikube docker-env)` before building
+- Rebuild with a new version tag `docker build -t chaos-demo-app:v5 .`
 - Use versioned tags (v1, v2, v3) instead of `latest`
+- Update the deployment: Change the image field in your deployment.yaml file to use the new version tag
+- Redeploy: `kubectl apply -f deployment.yaml`
+- Kubernetes will recognize the new tag and pull the image from its local cache, successfully starting the pod.
 - Check: `kubectl get pods`
 - View logs: `kubectl logs deployment/chaos-demo-app`
 

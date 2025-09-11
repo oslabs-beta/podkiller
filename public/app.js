@@ -466,8 +466,13 @@ function renderPods() {
         let liquidClass = '';
         let statusText = pod.status;
         let statusClass = '';
+        const hasLatency = currentLatencyPods.includes(pod.name);
         
-        if (pod.status === 'Running') {
+        if (hasLatency && pod.status === 'Running') {
+            liquidClass = 'lagging';
+            statusText = 'Lagging';
+            statusClass = 'lagging';
+        } else if (pod.status === 'Running') {
             liquidClass = 'running';
             statusClass = 'running';
         } else if (pod.status === 'Pending') {
@@ -530,6 +535,7 @@ function renderPods() {
                     targetCount.textContent = '[ ' + selectedPods.length + ' ]';
                 }
             }
+            checkSelectedPodsLatencyState();
          })
     });
 }
@@ -603,6 +609,16 @@ async function killPod(namespace) {
     }
 
     try {
+        // Check for killed pods and update latency tracking
+        if (data.type === 'kill' && data.message && data.message.includes('Pod killed:')) {
+            const killedPodMatch = data.message.match(/Pod killed: (.+)/);
+            if (killedPodMatch) {
+                const killedPodName = killedPodMatch[1].trim();
+                removeKilledPodFromLatencyTracking(killedPodName);
+                updateLatencyButtonBasedOnGlobalState();
+            }
+        }
+
         // Refresh pods list when replacement pods are found
         if (data.type === 'replacement') {
             loadPods(currentNamespace);
@@ -640,7 +656,6 @@ async function killPod(namespace) {
         }
         
         if (data.type === 'done') {
-            // Operation complete - cleanup
             operationCompleted = true;
             selectedPods = [];
             setTimeout(() => {
@@ -649,6 +664,7 @@ async function killPod(namespace) {
                 fetchReports();
                 document.getElementById('selectAllBtn').textContent = 'Select All Pods';
                 document.getElementById('podCount').textContent = '[ Random ]';
+                updateLatencyButtonBasedOnSelection();
             }, 2000);
             
             if (!data.message) {
@@ -757,6 +773,9 @@ async function handleLatencyAction() {
             lagBtn.innerHTML = '<div>🐇</div>Cut Lag';
         }
         lagBtn.disabled = false;
+        selectedPods = [];
+        document.getElementById('podCount').textContent = '[ Random ]';
+        document.getElementById('selectAllBtn').textContent = 'Select All Pods';
         
     } else {
         // CLEAR LATENCY MODE
@@ -783,6 +802,9 @@ async function handleLatencyAction() {
         isLatencyActive = false;
         lagBtn.innerHTML = '<div>🐢</div> Add Lag';
         lagBtn.disabled = false;
+        selectedPods = [];
+        document.getElementById('podCount').textContent = '[ Random ]';
+        document.getElementById('selectAllBtn').textContent = 'Select All Pods';
         
         // If we cleared from pods that weren't in our tracking, clean up the array
         if (successfulClears > 0) {
@@ -804,6 +826,14 @@ async function setLatencyOnPod(podName, namespace, latencyMs) {
     if (response.ok) {
       console.log(result.message);
       addLogEntry(`Injected ${latencyMs}ms latency into pod: ${podName}`, 'info');
+      
+      // Add to tracking array if not already there
+      if (!currentLatencyPods.includes(podName)) {
+        currentLatencyPods.push(podName);
+      }
+      
+      // Refresh the pods display to show "Lagging" status
+      renderPods();
     } else {
       console.error(result.error);
       addLogEntry(`Failed to set latency for ${podName}: `, 'error');
@@ -827,6 +857,15 @@ async function clearLatencyOnPod(podName, namespace) {
     if (response.ok) {
       console.log(result.message);
       addLogEntry(`Cleared latency from pod: ${podName}`, 'done');
+
+      // Remove from tracking array
+      const index = currentLatencyPods.indexOf(podName);
+      if (index > -1) {
+        currentLatencyPods.splice(index, 1);
+      }
+      
+      // Refresh the pods display to remove "Lagging" status
+      renderPods();
     } else {
       console.error(result.error);
       addLogEntry(`Failed to clear latency from ${podName}: ${result.error}`, 'error');
@@ -845,5 +884,108 @@ function resetLatencyState() {
     const lagBtn = document.getElementById('lagBtn');
     if (lagBtn) {
         lagBtn.innerHTML = '<div>🐢</div>Add Lag';
+    }
+}
+
+// helper function to remove killed pods from latency tracking
+function removeKilledPodFromLatencyTracking(killedPodName) {
+    const index = currentLatencyPods.indexOf(killedPodName);
+    if (index > -1) {
+        currentLatencyPods.splice(index, 1);
+        addLogEntry(`Removed ${killedPodName} from latency tracking (pod killed)`, 'info');
+        
+        // Immediately update button if no more lagging pods exist
+        if (currentLatencyPods.length === 0 && isLatencyActive) {
+            const lagBtn = document.getElementById('lagBtn');
+            if (lagBtn) {
+                isLatencyActive = false;
+                lagBtn.innerHTML = '<div>🢔</div>Add Lag';
+                addLogEntry('Reset to Add Lag - no more lagging pods', 'info');
+            }
+        }
+    }
+
+    // Remove from selectedPods if it was selected
+    const selectedIndex = selectedPods.indexOf(killedPodName);
+    if (selectedIndex > -1) {
+        selectedPods.splice(selectedIndex, 1);
+        addLogEntry(`Removed ${killedPodName} from selected pods (pod killed)`, 'info');
+        
+        // Update the UI to reflect the removed selection
+        selectedPods = [];
+        document.getElementById('podCount').textContent = '[ Random ]';
+        document.getElementById('selectAllBtn').textContent = 'Select All Pods';
+    }
+    
+    // Refresh pods display and update button state
+    setTimeout(() => {
+        renderPods();
+    }, 100);
+    
+    return index > -1;
+}
+
+// Helper function to check if any currently selected pods have latency
+function checkSelectedPodsLatencyState() {
+    const lagBtn = document.getElementById('lagBtn');
+    
+    if (!lagBtn) return;
+    
+    // Check if any of the currently selected pods have latency
+    const selectedPodsWithLatency = selectedPods.filter(pod => 
+        currentLatencyPods.includes(pod)
+    );
+    
+    // If no selected pods have latency, switch to "Add Lag" mode
+    if (selectedPodsWithLatency.length === 0 && isLatencyActive) {
+        isLatencyActive = false;
+        lagBtn.innerHTML = '<div>🐢</div>Add Lag';
+        addLogEntry('Latency button reset - no selected pods have latency', 'info');
+    }
+    // If some selected pods have latency, switch to "Cut Lag" mode  
+    else if (selectedPodsWithLatency.length > 0 && !isLatencyActive) {
+        isLatencyActive = true;
+        lagBtn.innerHTML = '<div>🐇</div>Cut Lag';
+        addLogEntry('Latency button set to Cut Lag - selected pods have latency', 'info');
+    }
+}
+
+// helper function to update latency button based on current selection
+function updateLatencyButtonBasedOnSelection() {
+    const lagBtn = document.getElementById('lagBtn');
+    if (!lagBtn) return;
+    
+    // Check if any selected pods have latency
+    const selectedPodsWithLatency = selectedPods.filter(pod => 
+        currentLatencyPods.includes(pod)
+    );
+    
+    if (selectedPodsWithLatency.length > 0) {
+        // Some selected pods have latency - show "Cut Lag"
+        if (!isLatencyActive) {
+            isLatencyActive = true;
+            lagBtn.innerHTML = '<div>🐇</div>Cut Lag';
+        }
+    } else {
+        // No selected pods have latency - show "Add Lag"
+        if (isLatencyActive) {
+            isLatencyActive = false;
+            lagBtn.innerHTML = '<div>🐢</div>Add Lag';
+        }
+    }
+}
+
+// Helper function for timing
+function updateLatencyButtonBasedOnGlobalState() {
+    const lagBtn = document.getElementById('lagBtn');
+    if (!lagBtn) return;
+    
+    // If any pods globally have latency, and none are selected, reset to "Add Lag"
+    if (currentLatencyPods.length === 0) {
+        if (isLatencyActive) {
+            isLatencyActive = false;
+            lagBtn.innerHTML = '<div>🢔</div>Add Lag';
+            console.log('Reset to Add Lag - no pods have latency globally');
+        }
     }
 }

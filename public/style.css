@@ -763,6 +763,16 @@ label[for="namespace-select"] {
     box-shadow: 0 0 20px #ff00aa;
 }
 
+.pod-item.lagging {
+    background: linear-gradient(45deg, #8935ff, #9d42ff);
+    box-shadow: 0 0 20px rgba(110, 53, 255, 0.4);
+}
+
+.pod-item.lagging .pod-liquid {
+    background: linear-gradient(45deg, #ab35ff, #9d42ff, #bd5aff);
+    animation: lagging-pulse 2s ease-in-out infinite;
+}
+
 .pod-info {
     position: relative;
     z-index: 2; /* Sits on top of the liquid */
@@ -797,6 +807,33 @@ label[for="namespace-select"] {
 
 .pod-status.terminating {
     color: #aa0000; 
+}
+
+.pod-status.lagging {
+    color: #0040ff;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+    animation: lagging-text-glow 2s ease-in-out infinite;
+}
+
+@keyframes lagging-pulse {
+    0%, 100% { 
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    50% { 
+        transform: scale(1.05);
+        opacity: 1;
+    }
+}
+
+@keyframes lagging-text-glow {
+    0%, 100% { 
+        text-shadow: 0 0 10px rgba(53, 235, 255, 0.8);
+    }
+    50% { 
+        text-shadow: 0 0 20px rgb(53, 245, 255), 0 0 30px rgba(53, 235, 255, 0.6);
+    }
 }
 
 .empty-state {
