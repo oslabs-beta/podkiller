@@ -17,11 +17,8 @@ A chaos engineering dashboard for Kubernetes that provides a TIE Fighter-themed 
 - **Recovery Analytics**: Chart showing pod recovery times over time
 - **Session Statistics**: Track pods killed, average recovery time, and failed recoveries
 
-### Visual Design
-- Star Wars TIE Fighter cockpit theme with animated starfield background
-- Laser beam effects when killing pods
-- Animated pod status indicators with liquid fill effects
-- Retro sci-fi styling with custom fonts and glowing elements
+### Demo App
+- **Chaos Clock**: Counter app that shuts down when a pod is killed - refer to demo-app folder for more details
 
 ## Prerequisites
 
@@ -31,9 +28,9 @@ A chaos engineering dashboard for Kubernetes that provides a TIE Fighter-themed 
 
 ## Installation
 
-1. Clone the repository:
+1. Fork and Clone the repository:
 ```bash
-git clone <repository-url>
+git clone <https://github.com/oslabs-beta/podkiller>
 cd podkiller
 ```
 
@@ -44,7 +41,7 @@ npm install
 
 3. Start the server:
 ```bash
-node server.js
+npm start
 ```
 
 4. Open your browser to `http://localhost:3000`
@@ -65,6 +62,8 @@ node server.js
 1. Select one or more pods
 2. Set the desired latency in milliseconds (default: 500ms)
 3. Click "Add Lag" to inject network latency
+4. As the app continues making requests through the delayed network, the average keeps climbing
+5. Eventually it may timeout completely and go offline
 
 ### Monitoring
 - **Activity Log**: View real-time logs of all operations
@@ -90,19 +89,6 @@ node server.js
 ### Reporting
 - `GET /api/reports` - Retrieve chaos engineering reports
 - `POST /api/reports` - Save new chaos engineering report
-
-## File Structure
-
-```
-├── server.js          # Express server and API routes
-├── app.js             # Main frontend application logic
-├── killpod.js         # Kubernetes pod management functions
-├── chart.js           # Analytics and charting functionality
-├── canvas.js          # Starfield animation and visual effects
-├── style.css          # TIE Fighter themed styling
-├── index.html         # Main dashboard HTML
-└── reports/           # Directory for chaos engineering reports
-```
 
 ## Key Components
 

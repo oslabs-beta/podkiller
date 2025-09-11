@@ -10,6 +10,10 @@ let isMinikubeOperationInProgress = false;
 // Targets array for killPod()
 let selectedPods = []; 
 
+// Latency variables
+let isLatencyActive = false;
+let currentLatencyPods = [];
+
 // Launch App
 document.addEventListener('DOMContentLoaded', () => {
     initStarfield();
@@ -144,6 +148,9 @@ function clearPods(callback) {
     const podsList = document.getElementById('podsList');
     const podItems = podsList.querySelectorAll('.pod-item');
     
+    // Reset latency state when clearing pods
+    resetLatencyState();
+
     // Check if there are any pods to animate
     if (podItems.length > 0) {
         // Animate out all the pods
@@ -368,6 +375,7 @@ async function loadNamespaces() {
                     pods = []; // Clear the data array
                     renderPods(); // Render the empty list message
                     selectedPods = []; // Clear selected pods when the namespace changes
+                    resetLatencyState();
                 } else {
                     // If a valid namespace is selected, remove the attention animation and load new pods
                     labelElement.classList.remove('attention-text');
@@ -376,6 +384,7 @@ async function loadNamespaces() {
                     loadPods(selectedNamespace); // This will render the new pods
                     addLogEntry(`Switched to namespace: ${selectedNamespace}`, 'info');
                     selectedPods = []; // Clear selected pods when the namespace changes
+                    resetLatencyState();
                 }
             });
         });
@@ -706,18 +715,79 @@ function renderLogs() {
     `).join('');
 }
 
+// Function to handle latency button switch
 async function handleLatencyAction() {
+    const lagBtn = document.getElementById('lagBtn');
+    const lagInput = document.getElementById('latencyInput');
+    
     // Check if a pod is selected from the `selectedPods` array.
     if (selectedPods.length === 0) {
-        addLogEntry('Please select at least one pod to add latency to.', 'error');
+        addLogEntry('Please select at least one pod to add/clear latency.', 'error');
         return;
     }
 
-    const latencyMs = 500; // You can make this configurable later.
+    if (!isLatencyActive) {
+        // ADD LATENCY MODE
+        const latencyMs = parseInt(lagInput.value) || 500; // Get value from input, default to 500ms
+        
+        if (latencyMs <= 0) {
+            addLogEntry('Please enter a valid latency value greater than 0ms.', 'error');
+            return;
+        }
 
-    for (const podName of selectedPods) {
-        addLogEntry(`Attempting to set ${latencyMs}ms latency on pod: ${podName}`, 'info');
-        await setLatencyOnPod(podName, currentNamespace, latencyMs);
+        lagBtn.disabled = true; // Disable during operation
+        let successfulOperations = 0;
+        
+        for (const podName of selectedPods) {
+            addLogEntry(`Attempting to set ${latencyMs}ms latency on pod: ${podName}`, 'info');
+            try {
+                await setLatencyOnPod(podName, currentNamespace, latencyMs);
+                if (!currentLatencyPods.includes(podName)) {
+                    currentLatencyPods.push(podName);
+                }
+                successfulOperations++;
+            } catch (error) {
+                addLogEntry(`Failed to set latency on ${podName}: ${error.message}`, 'error');
+            }
+        }
+        
+        // Switch to "Cut Lag" mode only if at least one operation succeeded
+        if (successfulOperations > 0) {
+            isLatencyActive = true;
+            lagBtn.innerHTML = '<div>🐇</div>Cut Lag';
+        }
+        lagBtn.disabled = false;
+        
+    } else {
+        // CLEAR LATENCY MODE
+        lagBtn.disabled = true; // Disable during operation
+        let successfulClears = 0;
+        
+        for (const podName of selectedPods) {
+            addLogEntry(`Attempting to clear latency from pod: ${podName}`, 'info');
+            try {
+                await clearLatencyOnPod(podName, currentNamespace);
+                // Remove from tracking array
+                const index = currentLatencyPods.indexOf(podName);
+                if (index > -1) {
+                    currentLatencyPods.splice(index, 1);
+                }
+                successfulClears++;
+            } catch (error) {
+                addLogEntry(`Failed to clear latency from ${podName}: ${error.message}`, 'error');
+            }
+        }
+        
+        // Always switch back to "Add Lag" mode after clearing (regardless of tracking array)
+        // This ensures the button resets even if there are tracking inconsistencies
+        isLatencyActive = false;
+        lagBtn.innerHTML = '<div>🐢</div> Add Lag';
+        lagBtn.disabled = false;
+        
+        // If we cleared from pods that weren't in our tracking, clean up the array
+        if (successfulClears > 0) {
+            addLogEntry(`Successfully cleared latency from ${successfulClears} pod(s)`, 'done');
+        }
     }
 }
 
@@ -756,12 +826,24 @@ async function clearLatencyOnPod(podName, namespace) {
     const result = await response.json();
     if (response.ok) {
       console.log(result.message);
-      // You can add UI feedback here
+      addLogEntry(`Cleared latency from pod: ${podName}`, 'done');
     } else {
       console.error(result.error);
-      // You can add UI feedback here
+      addLogEntry(`Failed to clear latency from ${podName}: ${result.error}`, 'error');
+      throw new Error(result.error);
     }
   } catch (error) {
     console.error('Failed to clear latency:', error);
+    throw error;
   }
+}
+
+// function to reset latency state when pods change
+function resetLatencyState() {
+    isLatencyActive = false;
+    currentLatencyPods = [];
+    const lagBtn = document.getElementById('lagBtn');
+    if (lagBtn) {
+        lagBtn.innerHTML = '<div>🐢</div>Add Lag';
+    }
 }
