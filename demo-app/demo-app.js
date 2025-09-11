@@ -71,11 +71,19 @@ app.get('/', (req, res) => {
                 box-sizing: border-box;
                 overflow-y: auto; /* Allow internal scrolling if needed */
             }
-            .title {
+            #title-h1 {
                 font-family: 'Orbitron', sans-serif;
                 text-align: center;
                 font-size: 2.2em;
-                margin-bottom: 25px;
+                margin-bottom: 10px;
+                text-shadow: var(--text-shadow-green);
+                color: var(--matrix-green);
+            }
+            #title-h2 {
+                font-family: 'Orbitron', sans-serif;
+                text-align: center;
+                font-size: 1.8em;
+                margin-bottom: 15px;
                 text-shadow: var(--text-shadow-green);
                 color: var(--matrix-green);
             }
@@ -173,7 +181,7 @@ app.get('/', (req, res) => {
                 border-color: #ff0000 !important;
                 box-shadow: 0 0 50px rgba(255, 0, 0, 0.8) !important;
             }
-            .title.terminated {
+            #title-h1.terminated, #title-h2.terminated {
                 color: #ff0000 !important;
                 text-shadow: 0 0 20px #ff0000 !important;
             }
@@ -181,7 +189,8 @@ app.get('/', (req, res) => {
     </head>
     <body>
         <div class="container">
-            <h1 class="title">CHAOS DEMO INTERFACE</h1>
+            <h1 id="title-h1">CHAOS DEMO INTERFACE</h1>
+            <h2 id="title-h2">POD RUNNING</h2>
             
             <div class="stats-grid">
                 <div class="stat-box">
@@ -211,7 +220,7 @@ app.get('/', (req, res) => {
             </div>
 
             <div class="warning">
-                ⚠️ WARNING: This application will crash if its pod is terminated (either directly or due to high latency).
+                ⚠️ Website will crash if its pod is terminated, either directly or due to high latency.
             </div>
         </div>
 
@@ -245,118 +254,316 @@ app.get('/', (req, res) => {
                 const koreanSentences = [
                     '저는 커피를 마시러 갈 겁니다',
                     '강아지가 제 숙제를 먹었어요',
-                    '쓰레기 버리는 거 잊지 않았지?',
+                    '분리수거 잊지 않았지?',
                     '아이고 허리야',
                     '치킨 시킬까?',
                     '내가 뭘 하고 있는 거지?',
                     '피곤해 죽겠어요',
                     '피할 수 없으면 즐겨라',
                     '인생은 원래 그런 거야',
-                    '내가 지금 어디에 있는 거지?',
+                    '나는 지금 어디에 있는가',
                     '나 오늘 야근해요',
                     '월요일 아침 8시',
                     '떡볶이 먹고 싶다',
-                    '핵노잼',
+                    '헬노잼',
                     '이것이 현실이다',
-                    '몰라요? 몰라요? 모르면 맞아야죠!'
-                ];
-                
-                const drops = [];
-                const dropSentences = []; // Store which sentence each drop is using
-                const dropProgress = []; // Track how far through the sentence each drop is
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                
-                canvas.style.position = 'fixed';
-                canvas.style.top = '0';
-                canvas.style.left = '0';
-                canvas.style.width = '100%';
-                canvas.style.height = '100%';
-                canvas.style.zIndex = '1';
-                canvas.style.pointerEvents = 'none';
-                canvas.style.opacity = '0.3';
-                
-                document.body.appendChild(canvas);
-                
-                function resizeCanvas() {
-                    canvas.width = window.innerWidth;
-                    canvas.height = window.innerHeight;
-                }
-                
-                function initDrops() {
-                    const columns = Math.floor(canvas.width / 80); // Reasonable spacing for Korean text
-                    drops.length = 0;
-                    dropSentences.length = 0;
-                    dropProgress.length = 0;
+                    '모르나요? 모르나요? 모르면 맞아야죠!',
+                    '참을수 없는 존재의 가벼움',
+                    'BTS',
+                    'BLACKPINK',
+                    'yolo',
+                    '지금 바로 시작해',
+                    '죽음의 이지선다',
+                    '탈명권',
+                    '베르세르크',
+                    'Power',
+                    'EWGF',
+                    '고양이 똥 커피',
+                    'Unagi',
+                    'Hamachi-Toro',
+                    'コンピュータ',
+                    'プログラム', 
+                    'システム',
+                    'データベース',
+                    'ネットワーク',
+                    'インターネット',
+                    'ウイルス',
+                    'ハッカー',
+                    'セキュリティ',
+                    'アクセス',
+                    'パスワード',
+                    'ログイン',
+                    'ダウンロード',
+                    'アップロード',
+                    'バックアップ',
+                    'クラウド',
+                    'サーバー',
+                    'クライアント',
+                    'ブラウザ',
+                    'メモリ',
+                    'プロセッサ',
+                    'キーボード',
+                    'マウス',
+                    'モニター',
+                    'スピーカー',
+                    'こんにちは',
+                    'おはよう',
+                    'こんばんは',
+                    'ありがとう',
+                    'すみません',
+                    'はじめまして',
+                    'よろしく',
+                    'さようなら',
+                    'いただきます',
+                    'ごちそうさま',
+                    'おつかれさま',
+                    'がんばって',
+                    'だいじょうぶ',
+                    'わかりません',
+                    'すばらしい',
+                    '人工知能',
+                    '仮想現実',
+                    '未来技術',
+                    '電子回路',
+                    '情報処理',
+                    '暗号化',
+                    '復号化',
+                    '認証システム',
+                    'データ転送',
+                    '通信プロトコル',
+                    '機械学習',
+                    '深層学習',
+                    '量子計算',
+                    '生体認証',
+                    '画像認識'
+                    ];
+    
+                    const drops = [];
+                    const dropSentences = [];
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
                     
-                    for (let i = 0; i < columns; i++) {
-                        drops[i] = -Math.random() * canvas.height; // Start above screen
-                        dropSentences[i] = koreanSentences[Math.floor(Math.random() * koreanSentences.length)];
-                        dropProgress[i] = 0;
+                    canvas.style.position = 'fixed';
+                    canvas.style.top = '0';
+                    canvas.style.left = '0';
+                    canvas.style.width = '100%';
+                    canvas.style.height = '100%';
+                    canvas.style.zIndex = '1';
+                    canvas.style.pointerEvents = 'none';
+                    canvas.style.opacity = '0.3';
+                    
+                    document.body.appendChild(canvas);
+                    
+                    function resizeCanvas() {
+                        console.log('resizeCanvas called');
+                        canvas.width = window.innerWidth;
+                        canvas.height = window.innerHeight;
                     }
-                }
-                
-                function draw() {
-                    ctx.fillStyle = 'rgba(10, 10, 10, 0.05)';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
                     
-                    ctx.font = '12px "Share Tech Mono", monospace';
-                    
-                    for (let i = 0; i < drops.length; i++) {
-                        const sentence = dropSentences[i];
-                        const x = i * 80 + 10;
+                    const dropSentenceQueues = [];
+
+                    function initDrops() {
+                        console.log('initDrops called');
+                        const columns = Math.floor(canvas.width / 20);
+                        drops.length = 0;
+                        dropSentenceQueues.length = 0;
                         
-                        // Draw each character of the sentence vertically
-                        for (let j = 0; j < sentence.length; j++) {
-                            const char = sentence[j];
-                            const y = drops[i] + (j * 18); // 18px spacing between characters
+                        for (let i = 0; i < columns; i++) {
+                            drops[i] = -Math.random() * canvas.height;
                             
-                            if (y > 0 && y < canvas.height + 50) {
-                                // Create trailing effect - brighter at the head, dimmer at the tail
-                                let alpha = 1;
-                                if (j > 0) {
-                                    alpha = Math.max(0.1, 1 - (j * 0.08));
-                                }
-                                
-                                // Make the first few characters brighter (the "head" of the stream)
-                                if (j < 3) {
-                                    alpha = Math.min(1, alpha + 0.3);
-                                }
-                                
-                                ctx.fillStyle = \`rgba(0, 255, 65, \${alpha})\`;
-                                ctx.fillText(char, x, y);
+                            // Create a queue of 3-5 sentences for each column
+                            dropSentenceQueues[i] = [];
+                            const numSentences = 3 + Math.floor(Math.random() * 3); // 3-5 sentences
+                            for (let j = 0; j < numSentences; j++) {
+                                const randomSentence = koreanSentences[Math.floor(Math.random() * koreanSentences.length)];
+                                dropSentenceQueues[i].push(randomSentence + ' '); // Add space between sentences
                             }
                         }
+                    }
+                    
+                    console.log('About to define draw function...');
+                    function draw() {
+                        ctx.fillStyle = 'rgba(10, 10, 10, 0.99)';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
                         
-                        // Move the drop down
-                        drops[i] += 2;
+                        ctx.font = '24px "Share Tech Mono", monospace';
                         
-                        // Reset drop when the entire sentence has passed off screen
-                        const sentenceHeight = sentence.length * 18;
-                        if (drops[i] - sentenceHeight > canvas.height) {
-                            drops[i] = -sentenceHeight - Math.random() * 200; // Random delay before reappearing
-                            dropSentences[i] = koreanSentences[Math.floor(Math.random() * koreanSentences.length)]; // Pick new sentence
+                        for (let i = 0; i < drops.length; i++) {
+                            const sentenceQueue = dropSentenceQueues[i];
+                            const combinedText = sentenceQueue.join('');
+                            const x = i * 24 + 20;
+                            const characterHeight = 24;
+                            
+                            // Track sentence boundaries and states
+                            const sentenceGlowStates = {};
+                            const sentenceStartPositions = [];
+                            
+                            // Find sentence boundaries
+                            let currentPos = 0;
+                            for (let s = 0; s < sentenceQueue.length; s++) {
+                                sentenceStartPositions.push(currentPos);
+                                currentPos += sentenceQueue[s].length;
+                                
+                                // Create unique sentence ID
+                                const sentenceId = i + '-' + s;
+                                
+                                // Initialize glow state if it doesn't exist
+                                if (!window.matrixGlowStates) {
+                                    window.matrixGlowStates = {};
+                                }
+                                if (!window.matrixGlowStates[sentenceId]) {
+                                    window.matrixGlowStates[sentenceId] = {
+                                        isGlowing: false,
+                                        glowFrames: 0
+                                    };
+                                }
+                                
+                                // Random glow trigger (3% chance per frame)
+                                if (Math.random() < 0.03 && !window.matrixGlowStates[sentenceId].isGlowing) {
+                                    window.matrixGlowStates[sentenceId].isGlowing = true;
+                                    window.matrixGlowStates[sentenceId].glowFrames = 5 + Math.random() * 10; // 15-40 frames
+                                }
+                                
+                                // Decrease glow timer
+                                if (window.matrixGlowStates[sentenceId].isGlowing) {
+                                    window.matrixGlowStates[sentenceId].glowFrames--;
+                                    if (window.matrixGlowStates[sentenceId].glowFrames <= 0) {
+                                        window.matrixGlowStates[sentenceId].isGlowing = false;
+                                    }
+                                }
+                            }
+                            
+                            // Draw the combined sentence stream
+                            for (let j = 0; j < combinedText.length; j++) {
+                                const char = combinedText[j];
+                                const y = drops[i] + (j * characterHeight);
+                                
+                                if (y > -characterHeight && y < canvas.height + characterHeight) {
+                                    // Determine which sentence this character belongs to
+                                    let sentenceIndex = sentenceQueue.length - 1; // Default to last sentence
+                                    for (let s = 0; s < sentenceStartPositions.length - 1; s++) {
+                                        if (j >= sentenceStartPositions[s] && j < sentenceStartPositions[s + 1]) {
+                                            sentenceIndex = s;
+                                            break;
+                                        }
+                                    }
+                                    
+                                    const sentenceId = i + '-' + sentenceIndex;
+                                    const isGlowing = window.matrixGlowStates[sentenceId] && window.matrixGlowStates[sentenceId].isGlowing;
+                                    
+                                    // Apply glow effect
+                                    if (isGlowing) {
+                                        // Glowing effect - bright white with green shadow
+                                        ctx.shadowBlur = 2;
+                                        ctx.shadowColor = '#00ff41';
+                                        ctx.fillStyle = '#0fc93eff';
+                                        
+                                        // Add some glitch effect randomly
+                                        if (Math.random() < 0.1) {
+                                            ctx.fillStyle = '#004d1a'; // character glitch
+                                        }
+                                    } else {
+                                        // Normal green
+                                        ctx.shadowBlur = 0;
+                                        ctx.fillStyle = 'rgba(0, 255, 65, 1)';
+                                    }
+                                    
+                                    ctx.fillText(char, x, y);
+                                    
+                                    // Reset shadow for next character
+                                    ctx.shadowBlur = 0;
+                                }
+                            }
+                            
+                            drops[i] += 8;
+                            
+                            // When the stream is mostly off screen, add a new sentence and remove the first one
+                            if (drops[i] > characterHeight * 20) {
+                                // Add new sentence to the end
+                                const newSentence = koreanSentences[Math.floor(Math.random() * koreanSentences.length)] + ' ';
+                                dropSentenceQueues[i].push(newSentence);
+                                
+                                // Remove first sentence if queue gets too long
+                                if (dropSentenceQueues[i].length > 5) {
+                                    dropSentenceQueues[i].shift();
+                                    
+                                    // Clean up old glow states
+                                    const oldSentenceId = i + '-0';
+                                    if (window.matrixGlowStates && window.matrixGlowStates[oldSentenceId]) {
+                                        delete window.matrixGlowStates[oldSentenceId];
+                                    }
+                                }
+                                
+                                // Reset position for continuous flow
+                                drops[i] = -characterHeight * 10;
+                            }
                         }
                     }
-                }
-                
-                resizeCanvas();
-                initDrops();
-                
-                setInterval(draw, 80); // Good balance between smooth animation and readability
-                window.addEventListener('resize', () => {
+
+                    console.log('About to call resizeCanvas and initDrops...');
                     resizeCanvas();
                     initDrops();
-                });
-            }
+                    
+                    setInterval(draw, 100);
+                    console.log('Matrix rain setup complete');
+
+                    window.addEventListener('resize', () => {
+                        resizeCanvas();
+                        initDrops();
+                    });
+                }
             
             createMatrixRain();
+            console.log('Matrix rain function called');
             
             // Simulate some activity by making periodic requests to track failures
             let heartbeatInterval = setInterval(() => {
+                const start = Date.now(); // Start latency measurement
                 fetch('/heartbeat')
                     .then(response => {
                         if (!response.ok) throw new Error('Network response was not ok');
+                        
+                        // Measure latency
+                        const latency = Date.now() - start;
+                        latencyHistory.push(latency);
+                        if (latencyHistory.length > 10) latencyHistory.shift();
+                        
+                        const avgLatency = latencyHistory.reduce((a, b) => a + b, 0) / latencyHistory.length;
+                        document.getElementById('latency-display').textContent = avgLatency.toFixed(0) + 'ms';
+                        
+                        // Change color based on latency
+                        const latencyEl = document.getElementById('latency-display');
+                            if (avgLatency > 200) {
+                                latencyEl.style.color = 'var(--matrix-red)';
+                                latencyEl.style.textShadow = '0 0 20px var(--matrix-red)';
+                            } else if (avgLatency > 100) {
+                                latencyEl.style.color = '#ffaa00'; 
+                                latencyEl.style.textShadow = '0 0 10px #ffaa00';
+                            } else {
+                                latencyEl.style.color = 'var(--matrix-green)';
+                                latencyEl.style.textShadow = 'var(--text-shadow-green)';
+                            }
+                        
+                        // Add purplish blue glow for high latency (but not if terminated)
+                            if (avgLatency > 100 && !document.querySelector('.container').classList.contains('terminated')) {
+                                document.querySelector('.container').style.boxShadow = '0 0 30px rgba(138, 43, 226, 0.6)';
+                                document.querySelector('.container').style.border = '1px solid #8a2be2';
+                                document.getElementById('title-h1').style.color = '#871cebff';
+                                document.getElementById('title-h1').style.textShadow = '0 0 15px #8a2be2';
+                                document.getElementById('title-h2').style.color = '#871cebff';
+                                document.getElementById('title-h2').style.textShadow = '0 0 15px #8a2be2';
+                                document.getElementById('title-h2').textContent = 'POD LAGGING';
+                            } else if (!document.querySelector('.container').classList.contains('terminated')) {
+                                // Reset to normal glow when latency is good (but only if not terminated)
+                                document.querySelector('.container').style.boxShadow = 'var(--box-shadow-green)';
+                                document.querySelector('.container').style.border = '1px solid var(--matrix-green)';
+                                document.getElementById('title-h1').style.color = 'var(--matrix-green)';
+                                document.getElementById('title-h1').style.textShadow = 'var(--text-shadow-green)';
+                                document.getElementById('title-h2').style.color = 'var(--matrix-green)';
+                                document.getElementById('title-h2').style.textShadow = 'var(--text-shadow-green)';
+                                document.getElementById('title-h2').textContent = 'POD RUNNING';
+                            }
+
                         return response.json();
                     })
                     .then(data => {
@@ -370,15 +577,21 @@ app.get('/', (req, res) => {
                         });
                     })
                     .catch(() => {
+                        // Set latency to offline first
+                        document.getElementById('latency-display').textContent = 'OFFLINE';
+                        document.getElementById('latency-display').style.color = 'var(--matrix-red)';
+                        document.getElementById('latency-display').style.textShadow = '0 0 20px var(--matrix-red)';
+                        
                         // If this fails, the pod is probably down
                         clearInterval(interval);
                         clearInterval(heartbeatInterval);
-                        clearInterval(latencyMeasureInterval);
 
                         document.body.classList.add('terminated');
                         document.querySelector('.container').classList.add('terminated');
-                        document.querySelector('.title').classList.add('terminated');
-                        document.querySelector('.title').textContent = '💀 SYSTEM FAILURE - POD TERMINATED';
+                        document.getElementById('title-h1').classList.add('terminated');
+                        document.getElementById('title-h2').classList.add('terminated');
+                        document.getElementById('title-h1').textContent = 'SYSTEM FAILURE';
+                        document.getElementById('title-h2').textContent = 'POD TERMINATED';
                         
                         // Flash warning effect
                         let flashCount = 0;
@@ -395,23 +608,7 @@ app.get('/', (req, res) => {
             // Add scan line effect - moved to z-index 100 to be above matrix but below content
             function addScanLines() {
                 const scanline = document.createElement('div');
-                scanline.style.cssText = \`
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: repeating-linear-gradient(
-                        0deg,
-                        transparent,
-                        transparent 2px,
-                        rgba(0, 255, 65, 0.015) 2px,
-                        rgba(0, 255, 65, 0.015) 4px
-                    );
-                    pointer-events: none;
-                    z-index: 100;
-                    animation: scanlines 0.1s linear infinite;
-                \`;
+                scanline.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 65, 0.015) 2px, rgba(0, 255, 65, 0.015) 4px); pointer-events: none; z-index: 100; animation: scanlines 0.1s linear infinite;';
                 
                 const style = document.createElement('style');
                 style.textContent = \`
@@ -427,45 +624,6 @@ app.get('/', (req, res) => {
             addScanLines();
 
             let latencyHistory = [];
-            let latencyMeasureInterval;
-
-            function measureLatency() {
-                const start = Date.now();
-                fetch('/heartbeat')
-                    .then(response => {
-                        if (!response.ok) throw new Error('Network response was not ok');
-                        return response.json();
-                    })
-                    .then(() => {
-                        const latency = Date.now() - start;
-                        latencyHistory.push(latency);
-                        if (latencyHistory.length > 10) latencyHistory.shift();
-                        
-                        const avgLatency = latencyHistory.reduce((a, b) => a + b, 0) / latencyHistory.length;
-                        document.getElementById('latency-display').textContent = avgLatency.toFixed(0) + 'ms';
-                        
-                        // Change color based on latency
-                        const latencyEl = document.getElementById('latency-display');
-                        if (avgLatency > 1000) {
-                            latencyEl.style.color = 'var(--matrix-red)';
-                            latencyEl.style.textShadow = '0 0 20px var(--matrix-red)';
-                        } else if (avgLatency > 500) {
-                            latencyEl.style.color = '#ffaa00'; 
-                            latencyEl.style.textShadow = '0 0 10px #ffaa00';
-                        } else {
-                            latencyEl.style.color = 'var(--matrix-green)';
-                            latencyEl.style.textShadow = 'var(--text-shadow-green)';
-                        }
-                    })
-                    .catch(() => {
-                        document.getElementById('latency-display').textContent = 'OFFLINE';
-                        document.getElementById('latency-display').style.color = 'var(--matrix-red)';
-                        document.getElementById('latency-display').style.textShadow = '0 0 20px var(--matrix-red)';
-                        updateState('terminated');
-                    });
-            }
-
-        latencyMeasureInterval = setInterval(measureLatency, 2000);
         </script>
     </body>
     </html>
