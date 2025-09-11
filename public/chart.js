@@ -75,10 +75,10 @@ export function renderStatistics() {
                 <div style="font-size: 1.8em; font-weight: bold; color: #ef4444; margin-bottom: 5px;">${sessionStats.failedRecoveries}</div>
                 <div style="font-family: 'Asimovian', sans-serif; font-weight: 400; font-style: normal; font-size: 0.8em; color: rgba(255, 255, 255, 0.7); text-transform: uppercase;">Failed</div>
             </div>
-            <button onclick="resetSessionStats()" style="background: rgba(88, 236, 204, 0.2); border: 1px solid rgba(31, 149, 94, 0.3); color: #26e9dfff; padding: 6px 12px; border-radius: 4px; font-size: 0.8em; cursor: pointer;">
+            <button onclick="window.resetSessionStats()" style="background: rgba(88, 236, 204, 0.2); border: 1px solid rgba(31, 149, 94, 0.3); color: #26e9dfff; padding: 6px 12px; border-radius: 4px; font-size: 0.8em; cursor: pointer;">
                 Reset Session
             </button>
-            <button style="background: rgba(88, 236, 204, 0.2); border: 1px solid rgba(31, 149, 94, 0.3); color: #26e9dfff; padding: 6px 12px; border-radius: 4px; font-size: 0.8em; cursor: pointer;">
+            <button onclick="downloadReports()" style="background: rgba(88, 236, 204, 0.2); border: 1px solid rgba(31, 149, 94, 0.3); color: #26e9dfff; padding: 6px 12px; border-radius: 4px; font-size: 0.8em; cursor: pointer;">
                 Download Report
             </button>
         </div>
@@ -96,6 +96,8 @@ export function resetSessionStats() {
     renderStatistics();
     addLogEntry('Session statistics reset', 'error');
 }
+
+window.resetSessionStats = resetSessionStats;
 
 // Initialize Recovery Chart
 export function initializeChart() {
@@ -209,3 +211,30 @@ export async function fetchReports() {
         console.error(err);
     }
 }
+
+// Function to Download CSV
+window.downloadReports = async function() {
+    try {
+        const response = await fetch('/api/reports/export?format=csv');
+        
+        if (!response.ok) {
+            const error = await response.json();
+            addLogEntry(`Download failed: ${error.error}`, 'error');
+            return;
+        }
+        
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'chaos-reports.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        addLogEntry('Reports downloaded successfully', 'done');
+    } catch (error) {
+        addLogEntry(`Download error: ${error.message}`, 'error');
+    }
+};

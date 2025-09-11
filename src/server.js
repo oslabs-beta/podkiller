@@ -3,6 +3,7 @@ import { exec } from 'child_process';
 import { killPod } from './killpod.js';
 import { setLatency, clearLatency } from './latency.js';
 import * as k8s from '@kubernetes/client-node';
+import router from './reports.js';
 
 const app = express();
 app.use(express.json());
@@ -170,58 +171,8 @@ app.get('/api/killpod', async (req, res) => {
     }
 });
 
-// Sandar's GET reports
-app.get('/api/reports', async (req, res) => {
-    try {
-        const fs = await import('fs/promises');
-        const path = await import('path');
-        const reportDir = './reports';
-
-        // Check if the reports directory exists
-        const dirExists = await fs.default.stat(reportDir).catch(() => false);
-        if (!dirExists) {
-            return res.status(200).json({ reports: [] });
-        }
-
-        const files = await fs.default.readdir(reportDir);
-        const reports = [];
-
-        for (const file of files) {
-            if (file.endsWith('.json')) {
-                const filePath = path.default.join(reportDir, file);
-                const data = await fs.default.readFile(filePath, 'utf-8');
-                reports.push(JSON.parse(data));
-            }
-        }
-        res.status(200).json({ reports });
-    } catch (error) {
-        console.error('Failed to read reports:', error);
-        res.status(500).json({ error: 'Failed to retrieve reports' });
-    }
-});
-
-// Sandar's POST reports
-app.post('/api/reports', async (req, res) => {
-  const report = req.body;
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const filename = `chaos-report-${timestamp}.json`;
-
-  try {
-    const fs = await import('fs/promises');
-    await fs.default.mkdir('./reports', { recursive: true });
-    await fs.default.writeFile(
-      `./reports/${filename}`,
-      JSON.stringify(report, null, 2)
-    );
-    res.status(201).json({ message: 'Report saved', filename });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to save report' });
-  }
-});
-
-app.listen(3000, () => {
-  console.log('Dashboard running at http://localhost:3000');
-});
+// Sandar's Reports function
+app.use('/api/reports', router);
 
 // Pete's Latency Set function
 app.post('/api/latency/set', async (req, res) => {
@@ -245,4 +196,8 @@ app.post('/api/latency/clear', async (req, res) => {
     console.error('Failed to clear latency:', error.message);
     res.status(500).json({ success: false, error: error.message });
   }
+});
+
+app.listen(3000, () => {
+  console.log('Dashboard running at http://localhost:3000');
 });

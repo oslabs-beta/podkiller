@@ -391,6 +391,13 @@ async function loadPods(namespace = 'default') {
 
     console.log('Loading pods for namespace:', namespace);
 
+    // If no Namespace
+    if (namespace === 'null') {
+        pods = [];
+        renderPods();
+        return;
+    }
+
     // Check if Minikube operation is in progress
     if (isMinikubeOperationInProgress) {
         console.log('⏸️ Skipping pod loading - Minikube operation in progress');
