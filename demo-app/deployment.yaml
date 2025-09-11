@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chaos-demo-app
+  labels:
+    app: chaos-demo-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chaos-demo-app
+  template:
+    metadata:
+      labels:
+        app: chaos-demo-app
+    spec:
+      containers:
+      - name: chaos-demo-app
+        image: chaos-demo-app:v3
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8080
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chaos-demo-service
+spec:
+  selector:
+    app: chaos-demo-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer

@@ -1,0 +1,24 @@
+{
+  "name": "chaos-demo-app",
+  "version": "1.0.0",
+  "description": "A demo application for chaos engineering demonstrations",
+  "main": "demo-app.js",
+  "scripts": {
+    "start": "node demo-app.js",
+    "dev": "nodemon demo-app.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [
+    "chaos-engineering",
+    "kubernetes",
+    "demo",
+    "express"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
