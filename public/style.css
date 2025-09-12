@@ -290,8 +290,7 @@ h1 {
     border-radius: 12px;
     min-height: 0;
     
-    /*
-    Hides the interface initially and prepares it for animation
+    /* Hides the interface initially and prepares it for animation 
         opacity: 0;
         transform: scale(0.5) translateY(5px);
     Uses a custom property for consistent timing 

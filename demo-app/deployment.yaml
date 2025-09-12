@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: chaos-demo-app
-        image: chaos-demo-app:v8
+        image: chaos-demo-app:v9
         imagePullPolicy: Never
         ports:
         - containerPort: 8080
